@@ -1,3 +1,89 @@
+# qyq.py
+import sys
+
+usage = "Usage: " + sys.argv[0] + """ [-h] [--help] [sim]
+... -h or --help give help (long)
+... if sim is present, use simulator, otherwise real processor
+"""
+
+explanation  = """# Quantum Yi Qing
+# Casts the Yi Qing oracle.
+
+# Traditionally done with yarrowstalks in an intricate procedure to guarantee
+# that the Tao is governs the cast. In the West with our somewhat dryer notion
+# of randomicity, it is case by six 3-coin tosses representing each of 6 lines
+# of the hexagram and the 6 lines of the derivative hexagram.
+#
+# A "heads" toss is a 3. A "tails" is a 2. The 3 coins are summed and the lines,
+# Yang (solid) and Yin (broken) of the primary hexagram formed from the sums,
+# bottom (line 1) to top (line 6) according to these rules:
+#
+#	6 - Yin changing
+#	7 - Yang unchanging
+#	8 - Yin unchanging
+#	9 - Yang changing
+#
+# The derivative hexagram is formed from the identical lines, however any
+# "changing" line is the inverse line in the derivative hexagram.
+#
+# In the program, the lines of the primary hexagram are represented as follows:
+#
+#	*X* - Yin changing
+#	*** - Yang unchanging
+#	* * - Yin unchanging
+#	*0* - Yang changing
+#
+# In the derivative hexagram, the "changing" notion is abstracted and the
+# hexagram stands as calculated per above.
+#
+# The quantum program uses 3 qubits and Hadamards them into superposition.
+#
+# For the purpose of the oracle, a 1-bit counts as 3 and a 0-bit as 2.
+#
+# The most-measured classical 3-bit value that emerges from 1024 shots is
+# the winning 3-coin toss for that line of the hexagram,
+#
+# As modelled in qasm:
+#
+# include "qelib1.inc";
+# qreg q[5];
+# creg c[5];
+#
+# h q[0];
+# h q[1];
+# h q[2];
+# measure q[0] -> c[0];
+# measure q[1] -> c[1];
+# measure q[2] -> c[2];
+#
+# If two classical bit patterns emerge with identical frequency, the conflict
+# is resolved as follows:
+#
+#	identical sum	- don't care
+#	6 vs 8			- 8
+#	7 vs 9			- 9
+#	7 vs 8			- 7
+#	6 vs 9			- 6
+#
+# If three classical bit patterns emerge with identical frequency, only the
+# first two are considered.
+"""
+
+# By default, use the real Q processor.
+sim = False
+
+if len(sys.argv) > 1:
+	if (sys.argv[1] == "-h") or (sys.argv[1] == "--help"):
+		print(usage)
+		print(explanation)
+		exit()
+	elif (sys.argv[1] == "sim"):
+		sim = True
+	else:
+		print("Unknown argument " + sys.argv[1])
+		print(usage)
+		exit()
+
 import numpy as np
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
 from qiskit import execute
@@ -16,31 +102,6 @@ circ.h(q[2])
 
 print(circ.draw())
 
-# Import Aer
-from qiskit import BasicAer
-
-# Run the quantum circuit on a statevector simulator backend
-# backend = BasicAer.get_backend('statevector_simulator')
-
-# Create a Quantum Program for execution 
-# job = execute(circ, backend)
-
-# result = job.result()
-
-# outputstate = result.get_statevector(circ, decimals=3)
-
-# show(plot(outputstate))
-# print('A')
-# print(outputstate)
-# print('B')
-# from qiskit.tools.visualization import plot_state_city
-# print('C')
-# plot_state_city(outputstate) # nothing seems to work here
-# print('D')
-# show(plot_state_city(outputstate)) # nothing seems to work here
-# print('E')
-# print('Done')
-
 # Create a Classical Register with 3 bits.
 c = ClassicalRegister(3, 'c')
 # Create a Quantum Circuit
@@ -56,23 +117,6 @@ qc = circ+meas
 #drawing the circuit
 print(qc.draw())
 
-# Use Aer's qasm_simulator
-backend_sim = BasicAer.get_backend('qasm_simulator')
-
-# Execute the circuit on the qasm simulator.
-# We've set the number of repeats of the circuit
-# to be 1024, which is the default.
-job_sim = execute(qc, backend_sim, shots=1024)
-
-# Grab the results from the job.
-result_sim = job_sim.result()
-
-counts = result_sim.get_counts(qc)
-print(counts)
-
-from qiskit.tools.visualization import plot_histogram
-show(plot_histogram(counts))
-
 from qiskit import IBMQ
 IBMQ.load_accounts()
 
@@ -86,7 +130,7 @@ print("The best backend is " + backend.name())
 
 from qiskit.tools.monitor import job_monitor
 shots = 1024           # Number of shots to run the program (experiment); maximum is 8192 shots.
-max_credits = 3        # Maximum number of credits to spend on executions. 
+max_credits = 3        # Maximum number of credits to spend on executions.
 
 job_exp = execute(qc, backend=backend, shots=shots, max_credits=max_credits)
 job_monitor(job_exp)
@@ -102,8 +146,5 @@ for i in sorted_keys:
     sorted_counts[i]=counts_exp[i]
 
 print(sorted_counts)
-
-print("Plotting historogram: plot_histogram([counts_exp,counts])")
-plot_histogram([counts_exp,counts])
 
 # End
