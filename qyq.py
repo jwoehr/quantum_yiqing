@@ -84,6 +84,13 @@ if len(sys.argv) > 1:
 		print(usage)
 		exit()
 
+print("""QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
+Copyright 2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
+BSD-3 license -- See LICENSE which you should have received with this code.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+WIHTOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+""")
+
 import numpy as np
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
 from qiskit import execute
