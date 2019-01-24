@@ -1,3 +1,12 @@
+# qyqhex.py ... Calculate hexagram and changed hexagram from IBMQ bit dictionary
+# QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
+# Copyright 2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
+# BSD-3 license -- See LICENSE which you should have received with this code.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# WIHTOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+
+# Embody and render a line of a hexagram
+# Keeps state so changed line can be rendered
 class QYQLine:
 
 	yin_c  = [False,True]
@@ -42,8 +51,25 @@ class QYQLine:
 			else:
 				l+=' '
 		l += '*'
-		print(l, end='')
+		# print(l, end='')
+		return l
 
+	# Render a changed line for the second hexagram
+	def draw_changed(self):
+		if self.yang_yin:
+			if self.changing:
+				l = '* *'
+			else:
+				l = '***'
+		else:
+			if self.changing:
+				l = '***'
+			else:
+				l = '* *'
+		# print(l, end='')
+		return l
+
+	# Analyse a bit dictionary and create the line
 	def interp(bit_dict):
 		best = 0
 		bits = [None,None]
@@ -78,7 +104,7 @@ class QYQLine:
 			else:
 				return QYQLine.newFromPattern(QYQLine.yang_c)
 
-# QYQHexagram keeps its lines in a list and draws them
+# QYQHexagram keeps its lines in a list and draws hexagram and changed hexagram
 class QYQHexagram:
 
 	def __init__(self, lines=None):
@@ -87,20 +113,22 @@ class QYQHexagram:
 		else:
 			self.lines = lines
 
+	# Add a line to hexagram
 	def add(self, line):
 		self.lines.append(line)
 
+	# Print hexagram at current state
 	def draw(self, reverse=False):
 		qinglines = self.lines[:]
-		
-		if reverse:		
+
+		if reverse:
 			qinglines.reverse()
 			# print(qinglines)
-			
-		for i in qinglines:
-			i.draw()
-			print()
 
+		for i in qinglines:
+			print (i.draw() + '  ' + i.draw_changed())
+
+	# Test routine
 	def test(self):
 		h=QYQHexagram()
 		h.add(QYQLine(True,False))
@@ -111,3 +139,5 @@ class QYQHexagram:
 		h.add(QYQLine(False,False))
 		h.draw()
 		h.draw(True)
+
+# End

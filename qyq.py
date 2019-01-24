@@ -1,4 +1,10 @@
-# qyq.py
+# qyq.py ... Main script. Run and render.
+# QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
+# Copyright 2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
+# BSD-3 license -- See LICENSE which you should have received with this code.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# WIHTOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+
 import sys
 
 usage = "Usage: " + sys.argv[0] + """ [-h] [--help] [sim]
@@ -131,21 +137,36 @@ print(qc.draw())
 from qiskit import IBMQ
 IBMQ.load_accounts()
 
-from qiskit.providers.ibmq import least_busy
+backend = None
 
-large_enough_devices = IBMQ.backends(filters=lambda x: x.configuration().n_qubits > 4 and
+# Choose backend and connect
+if sim:
+	backend = IBMQ.get_backend('ibmq_qasm_simulator')
+else:
+	from qiskit.providers.ibmq import least_busy
+	large_enough_devices = IBMQ.backends(filters=lambda x: x.configuration().n_qubits > 4 and
                                                       not x.configuration().simulator)
+	backend = least_busy(large_enough_devices)
+	print("The best backend is " + backend.name())
 
-backend = least_busy(large_enough_devices)
-print("The best backend is " + backend.name())
+print("Backend is", end=" ")
+print(backend)
 
+if backend == None:
+	print("No backend available, quitting.")
+	exit(100)
+
+# Prepare jaob
 from qiskit.tools.monitor import job_monitor
 shots = 1024           # Number of shots to run the program (experiment); maximum is 8192 shots.
 max_credits = 3        # Maximum number of credits to spend on executions.
 
+# Prepare to render
 import qyqhex as qh
 h = qh.QYQHexagram()
 
+# Loop running circuit and measuring.
+# Each complete run provides the bit dictionary for one line.
 for i in range(0,6):
 	job_exp = execute(qc, backend=backend, shots=shots, max_credits=max_credits)
 	job_monitor(job_exp)
@@ -164,4 +185,5 @@ for i in range(0,6):
 	h.draw(True) # draw reversed
 
 print('Done!')
+
 # End
