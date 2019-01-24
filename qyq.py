@@ -60,13 +60,17 @@ explanation  = """# Quantum Yi Qing
 # is resolved as follows:
 #
 #	identical sum	- don't care
+#	6 vs 7			- 7
 #	6 vs 8			- 8
-#	7 vs 9			- 9
-#	7 vs 8			- 7
 #	6 vs 9			- 6
+#	7 vs 8			- 8
+#	7 vs 9			- 9
+#	8 vs 9			- 9
+
+
 #
-# If three classical bit patterns emerge with identical frequency, only the
-# first two are considered.
+# If more than two classical bit patterns emerge with identical frequency, only
+# the first and last are considered.
 """
 
 # By default, use the real Q processor.
@@ -139,19 +143,25 @@ from qiskit.tools.monitor import job_monitor
 shots = 1024           # Number of shots to run the program (experiment); maximum is 8192 shots.
 max_credits = 3        # Maximum number of credits to spend on executions.
 
-job_exp = execute(qc, backend=backend, shots=shots, max_credits=max_credits)
-job_monitor(job_exp)
+import qyqhex as qh
+h = qh.QYQHexagram()
 
-result_exp = job_exp.result()
+for i in range(0,6):
+	job_exp = execute(qc, backend=backend, shots=shots, max_credits=max_credits)
+	job_monitor(job_exp)
 
+	result_exp = job_exp.result()
 
-counts_exp = result_exp.get_counts(qc)
-print(counts_exp)
-sorted_keys = sorted(counts_exp.keys())
-sorted_counts = {}
-for i in sorted_keys:
-    sorted_counts[i]=counts_exp[i]
+	counts_exp = result_exp.get_counts(qc)
+	print(counts_exp)
+	sorted_keys = sorted(counts_exp.keys())
+	sorted_counts = {}
+	for i in sorted_keys:
+		sorted_counts[i]=counts_exp[i]
 
-print(sorted_counts)
+	print(sorted_counts)
+	h.add(qh.QYQLine.interp(counts_exp))
+	h.draw(True) # draw reversed
 
+print('Done!')
 # End
