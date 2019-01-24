@@ -9,4 +9,4 @@ You must have [QISKit](https://qiskit.org/) installed.
 
 You need an [IBMQ Experience](https://quantumexperience.ng.bluemix.net) account and token installed.
 
-python qyq.py --help for an explanation.
+`python qyq.py --help` for an explanation.
