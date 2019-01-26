@@ -163,7 +163,7 @@ max_credits = 3        # Maximum number of credits to spend on executions.
 
 # Prepare to render
 import qyqhex as qh
-h = qh.QYQHexagram()
+h = qh.QYQHexagram(backend)
 
 # Loop running circuit and measuring.
 # Each complete run provides the bit dictionary for one line.

@@ -117,7 +117,8 @@ class QYQTimedCountsExp:
 # QYQHexagram keeps its lines in a list and draws hexagram and changed hexagram
 class QYQHexagram:
 
-	def __init__(self, lines=None):
+	def __init__(self, backend, lines=None):
+		self.backend = backend
 		self.qyqTimeCountsCollection = []
 		if lines == None:
 			self.lines = []
@@ -146,7 +147,7 @@ class QYQHexagram:
 
 	# Create a csv of the hex run
 	def csv(self):
-		result = "Timestamp                 ;"
+		result = str(self.backend) + ';'
 		for i in QYQLine.patt.keys():
 			result+=i
 			result+=";"
