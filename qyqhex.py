@@ -5,6 +5,8 @@
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 # WIHTOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 
+import datetime as dt
+
 # Embody and render a line of a hexagram
 # Keeps state so changed line can be rendered
 class QYQLine:
@@ -104,10 +106,21 @@ class QYQLine:
 			else:
 				return QYQLine.newFromPattern(QYQLine.yang_c)
 
+# Sorted counts_exp with timestamp
+class QYQTimedCountsExp:
+	def __init__(self, counts_exp):
+		self.time=dt.datetime.now()
+		sorted_keys = sorted(counts_exp.keys())
+		sorted_counts = {}
+		for i in sorted_keys:
+			sorted_counts[i]=counts_exp[i]
+		self.counts_exp = sorted_counts
+
 # QYQHexagram keeps its lines in a list and draws hexagram and changed hexagram
 class QYQHexagram:
 
 	def __init__(self, lines=None):
+		self.qyqTimeCountsCollection = []
 		if lines == None:
 			self.lines = []
 		else:
@@ -116,6 +129,11 @@ class QYQHexagram:
 	# Add a line to hexagram
 	def add(self, line):
 		self.lines.append(line)
+
+	# Add line with counts_exp preserved to hexagram
+	def assimilate(self, counts_exp):
+		self.qyqTimeCountsCollection.append(QYQTimedCountsExp(counts_exp))
+		self.add(QYQLine.interp(counts_exp))
 
 	# Print hexagram at current state
 	def draw(self, reverse=False):
@@ -127,6 +145,22 @@ class QYQHexagram:
 
 		for i in qinglines:
 			print (i.draw() + '  ' + i.draw_changed())
+
+	# Create a csv of the hex run
+	def csv(self):
+		result = "Timestamp                 ;"
+		for i in QYQLine.patt.keys():
+			result+=i
+			result+=";"
+		result+="\n"
+		for i in self.qyqTimeCountsCollection:
+			result+=i.time.strftime("%Y-%m-%d_%H:%M:%S:%f")
+			result+=";"
+			for j in i.counts_exp.values():
+				result+=str(j)
+				result+=";"
+			result+="\n"
+		return result
 
 	# Test routine
 	def test(self):

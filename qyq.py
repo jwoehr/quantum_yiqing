@@ -181,8 +181,12 @@ for i in range(0,6):
 		sorted_counts[i]=counts_exp[i]
 
 	print(sorted_counts)
-	h.add(qh.QYQLine.interp(counts_exp))
+	# h.add(qh.QYQLine.interp(counts_exp))
+	h.assimilate(counts_exp)
 	h.draw(True) # draw reversed
+
+print("CSV of run:")
+print(h.csv())
 
 print('Done!')
 
