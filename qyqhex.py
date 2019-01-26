@@ -41,34 +41,32 @@ class QYQLine:
 
 	# Render the line
 	def draw(self):
-		l = '*'
+		l = '***'
 		if self.yang_yin:
 			if self.changing:
-				l+='0'
+				l+='000'
 			else:
-				l+='*'
+				l+='***'
 		else:
 			if self.changing:
-				l+='X'
+				l+='XXX'
 			else:
-				l+=' '
-		l += '*'
-		# print(l, end='')
+				l+='   '
+		l += '***'
 		return l
 
 	# Render a changed line for the second hexagram
 	def draw_changed(self):
 		if self.yang_yin:
 			if self.changing:
-				l = '* *'
+				l = '***   ***'
 			else:
-				l = '***'
+				l = '*********'
 		else:
 			if self.changing:
-				l = '***'
+				l = '*********'
 			else:
-				l = '* *'
-		# print(l, end='')
+				l = '***   ***'
 		return l
 
 	# Analyse a bit dictionary and create the line
@@ -144,7 +142,7 @@ class QYQHexagram:
 			# print(qinglines)
 
 		for i in qinglines:
-			print (i.draw() + '  ' + i.draw_changed())
+			print (i.draw() + '   ' + i.draw_changed())
 
 	# Create a csv of the hex run
 	def csv(self):
