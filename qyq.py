@@ -18,6 +18,8 @@ BSD-3 license -- See LICENSE which you should have received with this code.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 
+Default is to run on genuine IBM Q quantum processor.
+
 Type -h or --help for important options information
 
 Traditionally done with yarrowstalks in an intricate procedure to guarantee\n
@@ -97,6 +99,7 @@ import sys
 import argparse
 parser = argparse.ArgumentParser(description=explanation)
 group = parser.add_mutually_exclusive_group()
+group.add_argument("-q", "--ibmq", action="store_true", help = "Use genuine IBMQ processor (default)")
 group.add_argument("-s", "--sim", action="store_true", help = "Use IBMQ qasm simulator")
 group.add_argument("-a", "--aer", action="store_true", help = "User QISKit aer simulator")
 parser.add_argument("-x", "--xrot", action="store_true", help="Perform an X rotation before Hadamard")
