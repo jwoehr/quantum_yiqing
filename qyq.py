@@ -5,6 +5,14 @@
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 # WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 
+import qyqhex as qh
+from qiskit.tools.monitor import job_monitor
+from pylab import *
+from qiskit import execute
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
+import numpy as np
+import argparse
+import sys
 explanation = """QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
 Copyright 2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
 BSD-3 license -- See LICENSE which you should have received with this code.
@@ -12,7 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 """
 
-long_explanation  = """QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
+long_explanation = """QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
 Copyright 2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
 BSD-3 license -- See LICENSE which you should have received with this code.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
@@ -94,17 +102,22 @@ At present, this feature does not work correctly when all possible outcomes do n
 In particular, it does not work correctly with the Aer state vector simulator.
 """
 
-import sys
 
-import argparse
 parser = argparse.ArgumentParser(description=explanation)
 group = parser.add_mutually_exclusive_group()
-group.add_argument("-q", "--ibmq", action="store_true", help = "Use genuine IBMQ processor (default)")
-group.add_argument("-s", "--sim", action="store_true", help = "Use IBMQ qasm simulator")
-group.add_argument("-a", "--aer", action="store_true", help = "User QISKit aer simulator")
-parser.add_argument("-x", "--xrot", action="store_true", help="Perform an X rotation before Hadamard")
-parser.add_argument("-u", "--usage", action="store_true", help="Show long usage message and exit 0")
-args=parser.parse_args()
+group.add_argument("-q", "--ibmq", action="store_true",
+                   help="Use genuine IBMQ processor (default)")
+group.add_argument("-s", "--sim", action="store_true",
+                   help="Use IBMQ qasm simulator")
+group.add_argument("-a", "--aer", action="store_true",
+                   help="User QISKit aer simulator")
+parser.add_argument("-x", "--xrot", action="store_true",
+                    help="Perform an X rotation before Hadamard")
+parser.add_argument("-u", "--usage", action="store_true",
+                    help="Show long usage message and exit 0")
+parser.add_argument("-c", "--cnot", type=int, nargs='*',
+                    help="One or two arguments: 0=cx q[1],q[0] 1=cx q[2],q[1] in order on command line")
+args = parser.parse_args()
 
 if args.usage:
     print(long_explanation)
@@ -112,10 +125,6 @@ if args.usage:
 
 # exit()
 
-import numpy as np
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
-from qiskit import execute
-from pylab import *
 
 # Create a Quantum Register with 3 qubits.
 q = QuantumRegister(3, 'q')
@@ -134,6 +143,11 @@ circ.h(q[0])
 circ.h(q[1])
 circ.h(q[2])
 
+# CNOTs for entaglement (only 0-1 and 1-2 supported)
+if len(args.cnot) > 0:
+    for i in args.cnot:
+        circ.cx(q[i + 1], q[i])
+
 print(circ.draw())
 
 # Create a Classical Register with 3 bits.
@@ -142,13 +156,13 @@ c = ClassicalRegister(3, 'c')
 meas = QuantumCircuit(q, c)
 meas.barrier(q)
 # map the quantum measurement to the classical bits
-meas.measure(q,c)
+meas.measure(q, c)
 
 # The Qiskit circuit object supports composition using
 # the addition operator.
-qc = circ+meas
+qc = circ + meas
 
-#drawing the circuit
+# drawing the circuit
 print(qc.draw())
 
 # Choose backend
@@ -167,8 +181,8 @@ else:
         backend = IBMQ.get_backend('ibmq_qasm_simulator')
     else:
         from qiskit.providers.ibmq import least_busy
-        large_enough_devices = IBMQ.backends(filters=lambda x: x.configuration().n_qubits > 4 and
-            not x.configuration().simulator)
+        large_enough_devices = IBMQ.backends(filters=lambda x: x.configuration().n_qubits > 4
+                                             and not x.configuration().simulator)
         backend = least_busy(large_enough_devices)
         print("The best backend is " + backend.name())
 
@@ -180,18 +194,18 @@ if backend == None:
     exit(100)
 
 # Prepare jaob
-from qiskit.tools.monitor import job_monitor
-shots = 1024           # Number of shots to run the program (experiment); maximum is 8192 shots.
+# Number of shots to run the program (experiment); maximum is 8192 shots.
+shots = 1024
 max_credits = 3        # Maximum number of credits to spend on executions.
 
 # Prepare to render
-import qyqhex as qh
 h = qh.QYQHexagram(backend)
 
 # Loop running circuit and measuring.
 # Each complete run provides the bit dictionary for one line.
-for i in range(0,6):
-    job_exp = execute(qc, backend=backend, shots=shots, max_credits=max_credits)
+for i in range(0, 6):
+    job_exp = execute(qc, backend=backend, shots=shots,
+                      max_credits=max_credits)
     job_monitor(job_exp)
 
     result_exp = job_exp.result()
@@ -201,12 +215,12 @@ for i in range(0,6):
     sorted_keys = sorted(counts_exp.keys())
     sorted_counts = {}
     for i in sorted_keys:
-        sorted_counts[i]=counts_exp[i]
+        sorted_counts[i] = counts_exp[i]
 
     print(sorted_counts)
     # h.add(qh.QYQLine.interp(counts_exp))
     h.assimilate(counts_exp)
-    h.draw(True) # draw reversed
+    h.draw(True)  # draw reversed
 
 print("CSV of run:")
 print(h.csv())
