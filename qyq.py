@@ -144,7 +144,7 @@ circ.h(q[1])
 circ.h(q[2])
 
 # CNOTs for entaglement (only 0-1 and 1-2 supported)
-if len(args.cnot) > 0:
+if args.cnot and len(args.cnot) > 0:
     for i in args.cnot:
         circ.cx(q[i + 1], q[i])
 
