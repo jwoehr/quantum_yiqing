@@ -111,6 +111,8 @@ group.add_argument("-s", "--sim", action="store_true",
                    help="Use IBMQ qasm simulator")
 group.add_argument("-a", "--aer", action="store_true",
                    help="User QISKit aer simulator")
+parser.add_argument("-d", "--dumpqasm", action="store_true",
+                    help="Dump the qasm for the circuit")
 parser.add_argument("-x", "--xrot", action="store_true",
                     help="Perform an X rotation before Hadamard")
 parser.add_argument("-u", "--usage", action="store_true",
@@ -162,6 +164,10 @@ meas.measure(q, c)
 # the addition operator.
 qc = circ + meas
 
+# dump qasm
+if args.dumpqasm:
+    print(qc.qasm())
+
 # drawing the circuit
 print(qc.draw())
 
@@ -193,7 +199,7 @@ if backend == None:
     print("No backend available, quitting.")
     exit(100)
 
-# Prepare jaob
+# Prepare job
 # Number of shots to run the program (experiment); maximum is 8192 shots.
 shots = 1024
 max_credits = 3        # Maximum number of credits to spend on executions.
