@@ -28,10 +28,15 @@ WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 
 Default is to run on genuine IBM Q quantum processor.
 
-Type -h or --help for important options information
+Default is to assume the user has stored an IBM Q account identity token
+which can be retrieved by qiskit.IBMQ.load_accounts(). Alternatively, the
+token can be provided via the -i --identity switch. Additionally, the
+--url switch can provide a specific url.
 
-Traditionally done with yarrowstalks in an intricate procedure to guarantee\n
-that the Tao is governs the cast. In the West with our somewhat dryer notion\n
+Type -h or --help for important options information.
+
+Traditionally done with yarrowstalks in an intricate procedure to guarantee
+that the Tao is governs the cast. In the West with our somewhat dryer notion
 of randomicity, it is case by six 3-coin tosses representing each of 6 lines
 of the hexagram and the 6 lines of the derivative hexagram.
 
@@ -48,7 +53,6 @@ The derivative hexagram is formed from the identical lines, however any
 "changing" line is the inverse line in the derivative hexagram.
 
 In the program, the lines of the primary hexagram are represented as follows:
-
     ***XXX*** - Yin changing
     ********* - Yang unchanging
     ***   *** - Yin unchanging
@@ -111,22 +115,28 @@ group.add_argument("-s", "--sim", action="store_true",
                    help="Use IBMQ qasm simulator")
 group.add_argument("-a", "--aer", action="store_true",
                    help="User QISKit aer simulator")
+parser.add_argument("-c", "--cnot", type=int, nargs='*',
+                    help="One or two arguments: 0=cx q[1],q[0] 1=cx q[2],q[1] in order on command line")
 parser.add_argument("-d", "--dumpqasm", action="store_true",
                     help="Dump the qasm for the circuit")
+parser.add_argument("-i", "--identity", action="store",
+                    help="IBM Q Experience identity token")
+parser.add_argument("--max_credits", type=int, action="store", default=3,
+                    help="max credits to expend, default is 3")
+parser.add_argument("--shots", type=int, action="store", default=1024,
+                    help="number of execution shots, default is 1024")
+parser.add_argument("--url", action="store", default='https://quantumexperience.ng.bluemix.net/api',
+                    help="URL, default is https://quantumexperience.ng.bluemix.net/api")
 parser.add_argument("-x", "--xrot", action="store_true",
                     help="Perform an X rotation before Hadamard")
 parser.add_argument("-u", "--usage", action="store_true",
                     help="Show long usage message and exit 0")
-parser.add_argument("-c", "--cnot", type=int, nargs='*',
-                    help="One or two arguments: 0=cx q[1],q[0] 1=cx q[2],q[1] in order on command line")
+
 args = parser.parse_args()
 
 if args.usage:
     print(long_explanation)
     exit(0)
-
-# exit()
-
 
 # Create a Quantum Register with 3 qubits.
 q = QuantumRegister(3, 'q')
@@ -181,7 +191,11 @@ if args.aer:
     backend = BasicAer.get_backend('statevector_simulator')
 else:
     from qiskit import IBMQ
-    IBMQ.load_accounts()
+    if args.identity:
+        IBMQ.enable_account(args.identity, url=args.url)
+    else:
+        IBMQ.load_accounts()
+
     # Choose backend and connect
     if args.sim:
         backend = IBMQ.get_backend('ibmq_qasm_simulator')
@@ -200,9 +214,6 @@ if backend == None:
     exit(100)
 
 # Prepare job
-# Number of shots to run the program (experiment); maximum is 8192 shots.
-shots = 1024
-max_credits = 3        # Maximum number of credits to spend on executions.
 
 # Prepare to render
 h = qh.QYQHexagram(backend)
@@ -210,8 +221,8 @@ h = qh.QYQHexagram(backend)
 # Loop running circuit and measuring.
 # Each complete run provides the bit dictionary for one line.
 for i in range(0, 6):
-    job_exp = execute(qc, backend=backend, shots=shots,
-                      max_credits=max_credits)
+    job_exp = execute(qc, backend=backend, shots=args.shots,
+                      max_credits=args.max_credits)
     job_monitor(job_exp)
 
     result_exp = job_exp.result()
