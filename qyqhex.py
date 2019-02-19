@@ -12,13 +12,12 @@ import datetime as dt
 
 
 class QYQLine:
-
+    """Interpret a bit pattern as a hexagram line"""
     yin_c = [False, True]
     yang_u = [True, False]
     yin_u = [False, False]
     yang_c = [True, True]
 
-    # The string pattern for the c-bits
     patt = {'000': yin_c,
             '001': yang_u,
             '010': yang_u,
@@ -28,21 +27,25 @@ class QYQLine:
             '110': yin_u,
             '111': yang_c
             }
+    """The string pattern for the c-bits"""
 
     def __init__(self, yang_yin, changing):
+        """Strong or weak line, changing or unchanging"""
         self.yang_yin = yang_yin
         self.changing = changing
 
-    # Identify the pattern of the c-bits
+    @staticmethod
     def getPattern(cbits):
+        """Identify the pattern of the c-bits and return a line"""
         return QYQLine.patt[cbits]
 
-    # Create line from pattern
+    @staticmethod
     def newFromPattern(p):
+        """Create line from pattern"""
         return QYQLine(p[0], p[1])
 
-    # Render the line
     def draw(self):
+        """Render the line"""
         l = '***'
         if self.yang_yin:
             if self.changing:
@@ -57,8 +60,8 @@ class QYQLine:
         l += '***'
         return l
 
-    # Render a changed line for the second hexagram
     def draw_changed(self):
+        """Render a changed line for the second hexagram"""
         if self.yang_yin:
             if self.changing:
                 l = '***   ***'
@@ -71,8 +74,8 @@ class QYQLine:
                 l = '***   ***'
         return l
 
-    # Analyse a bit dictionary and create the line
     def interp(bit_dict):
+        """Analyse a bit dictionary and create the line"""
         best = 0
         bits = [None, None]
         for i in bit_dict.keys():
@@ -106,10 +109,10 @@ class QYQLine:
             else:
                 return QYQLine.newFromPattern(QYQLine.yang_c)
 
-# Sorted counts_exp with timestamp
-
 
 class QYQTimedCountsExp:
+    """Sorted counts_exp with timestamp"""
+
     def __init__(self, counts_exp):
         self.time = dt.datetime.now()
         sorted_keys = sorted(counts_exp.keys())
@@ -118,10 +121,12 @@ class QYQTimedCountsExp:
             sorted_counts[i] = counts_exp[i]
         self.counts_exp = sorted_counts
 
-# QYQHexagram keeps its lines in a list and draws hexagram and changed hexagram
-
 
 class QYQHexagram:
+    """
+    QYQHexagram keeps its lines in a list
+    and draws hexagram and changed hexagram
+    """
 
     def __init__(self, backend, lines=None):
         self.backend = backend
@@ -131,17 +136,17 @@ class QYQHexagram:
         else:
             self.lines = lines
 
-    # Add a line to hexagram
     def add(self, line):
+        """Add a line to hexagram"""
         self.lines.append(line)
 
-    # Add line with counts_exp preserved to hexagram
     def assimilate(self, counts_exp):
+        """Add line with counts_exp preserved to hexagram"""
         self.qyqTimeCountsCollection.append(QYQTimedCountsExp(counts_exp))
         self.add(QYQLine.interp(counts_exp))
 
-    # Print hexagram at current state
     def draw(self, reverse=False):
+        """Print hexagram at current state"""
         qinglines = self.lines[:]
 
         if reverse:
@@ -151,8 +156,8 @@ class QYQHexagram:
         for i in qinglines:
             print (i.draw() + '   ' + i.draw_changed())
 
-    # Create a csv of the hex run
     def csv(self):
+        """Create a csv of the hex run"""
         result = str(self.backend) + ';'
         for i in QYQLine.patt.keys():
             result += i
@@ -167,8 +172,8 @@ class QYQHexagram:
             result += "\n"
         return result
 
-    # Test routine
     def test(self):
+        """Test routine"""
         h = QYQHexagram()
         h.add(QYQLine(True, False))
         h.add(QYQLine(True, True))

@@ -7,7 +7,6 @@
 
 import qyqhex as qh
 from qiskit.tools.monitor import job_monitor
-from pylab import *
 from qiskit import execute
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
 import numpy as np
@@ -117,12 +116,14 @@ group.add_argument("-a", "--aer", action="store_true",
                    help="User QISKit aer simulator")
 parser.add_argument("-c", "--cnot", type=int, nargs='*',
                     help="One or two arguments: 0=cx q[1],q[0] 1=cx q[2],q[1] in order on command line")
-parser.add_argument("-d", "--dumpqasm", action="store_true",
-                    help="Dump the qasm for the circuit")
+parser.add_argument("-d", "--drawcircuit", action="store_true",
+                    help="Draw the circuit in extended charset")
 parser.add_argument("-i", "--identity", action="store",
                     help="IBM Q Experience identity token")
 parser.add_argument("--max_credits", type=int, action="store", default=3,
                     help="max credits to expend, default is 3")
+parser.add_argument("-q", "--qasm", action="store_true",
+                    help="Show the qasm for the circuit")
 parser.add_argument("--shots", type=int, action="store", default=1024,
                     help="number of execution shots, default is 1024")
 parser.add_argument("--url", action="store", default='https://quantumexperience.ng.bluemix.net/api',
@@ -160,7 +161,9 @@ if args.cnot and len(args.cnot) > 0:
     for i in args.cnot:
         circ.cx(q[i + 1], q[i])
 
-print(circ.draw())
+# drawing the circuit
+if args.drawcircuit:
+    print(circ.draw())
 
 # Create a Classical Register with 3 bits.
 c = ClassicalRegister(3, 'c')
@@ -174,12 +177,13 @@ meas.measure(q, c)
 # the addition operator.
 qc = circ + meas
 
-# dump qasm
-if args.dumpqasm:
+# show qasm
+if args.qasm:
     print(qc.qasm())
 
 # drawing the circuit
-print(qc.draw())
+if args.drawcircuit:
+    print(qc.draw())
 
 # Choose backend
 backend = None
