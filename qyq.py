@@ -120,9 +120,9 @@ parser.add_argument("-d", "--drawcircuit", action="store_true",
                     help="Draw the circuit in extended charset")
 parser.add_argument("-i", "--identity", action="store",
                     help="IBM Q Experience identity token")
-parser.add_argument("--max_credits", type=int, action="store", default=3,
+parser.add_argument("-m", "--max_credits", type=int, action="store", default=3,
                     help="max credits to expend, default is 3")
-parser.add_argument("-q", "--qasm", action="store_true",
+parser.add_argument("--qasm", action="store_true",
                     help="Show the qasm for the circuit")
 parser.add_argument("--shots", type=int, action="store", default=1024,
                     help="number of execution shots, default is 1024")
@@ -167,9 +167,11 @@ if args.drawcircuit:
 
 # Create a Classical Register with 3 bits.
 c = ClassicalRegister(3, 'c')
+
 # Create a Quantum Circuit
 meas = QuantumCircuit(q, c)
 meas.barrier(q)
+
 # map the quantum measurement to the classical bits
 meas.measure(q, c)
 
@@ -239,7 +241,7 @@ for i in range(0, 6):
         sorted_counts[i] = counts_exp[i]
 
     print(sorted_counts)
-    # h.add(qh.QYQLine.interp(counts_exp))
+
     h.assimilate(counts_exp)
     h.draw(True)  # draw reversed
 
