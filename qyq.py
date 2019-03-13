@@ -60,31 +60,37 @@ In the program, the lines of the primary hexagram are represented as follows:
 In the derivative hexagram, the "changing" notion is abstracted and the
 hexagram stands as calculated per above.
 
-The quantum program uses 3 qubits and Hadamards them into superposition.
+The quantum program uses 6 qubits and puts them by pairs in a Bell state, e.g.,
+h q[0];
+cx q[0],q[1];
+x q[0];
+
+It measures the entangled bits q[1], q[3], q[5].
 
 For the purpose of the oracle, a 1-bit counts as 3 and a 0-bit as 2.
 
 The most-measured classical 3-bit value that emerges from 1024 shots is
 the winning 3-coin toss for that line of the hexagram,
 
-The quantum computation is modelled in qasm thusly:
+The quantum computation in qasm:
 
+OPENQASM 2.0;
 include "qelib1.inc";
-qreg q[5];
-creg c[5];
-
+qreg q[6];
+creg c[3];
 h q[0];
-h q[1];
 h q[2];
-measure q[0] -> c[0];
-measure q[1] -> c[1];
-measure q[2] -> c[2];
-
-If -x is selected, an X rotation is performed before the Hadamard:
-
+h q[4];
+cx q[0],q[1];
+cx q[2],q[3];
+cx q[4],q[5];
 x q[0];
 x q[1];
 x q[2];
+barrier q[0],q[1],q[2],q[3],q[4],q[5];
+measure q[1] -> c[0];
+measure q[3] -> c[1];
+measure q[5] -> c[2];
 
 If two classical bit patterns emerge with identical frequency, the conflict
 is resolved as follows:
@@ -105,7 +111,6 @@ At present, this feature does not work correctly when all possible outcomes do n
 In particular, it does not work correctly with the Aer state vector simulator.
 """
 
-
 parser = argparse.ArgumentParser(description=explanation)
 group = parser.add_mutually_exclusive_group()
 group.add_argument("-q", "--ibmq", action="store_true",
@@ -114,8 +119,6 @@ group.add_argument("-s", "--sim", action="store_true",
                    help="Use IBMQ qasm simulator")
 group.add_argument("-a", "--aer", action="store_true",
                    help="User QISKit aer simulator")
-parser.add_argument("-c", "--cnot", type=int, nargs='*',
-                    help="One or two arguments: 0=cx q[1],q[0] 1=cx q[2],q[1] in order on command line")
 parser.add_argument("-d", "--drawcircuit", action="store_true",
                     help="Draw the circuit in extended charset")
 parser.add_argument("-i", "--identity", action="store",
@@ -128,8 +131,6 @@ parser.add_argument("--shots", type=int, action="store", default=1024,
                     help="number of execution shots, default is 1024")
 parser.add_argument("--url", action="store", default='https://quantumexperience.ng.bluemix.net/api',
                     help="URL, default is https://quantumexperience.ng.bluemix.net/api")
-parser.add_argument("-x", "--xrot", action="store_true",
-                    help="Perform an X rotation before Hadamard")
 parser.add_argument("-u", "--usage", action="store_true",
                     help="Show long usage message and exit 0")
 
@@ -139,27 +140,25 @@ if args.usage:
     print(long_explanation)
     exit(0)
 
-# Create a Quantum Register with 3 qubits.
-q = QuantumRegister(3, 'q')
+# Create a Quantum Register with 6 qubits.
+q = QuantumRegister(6, 'q')
 
 # Create a Quantum Circuit acting on the q register
 circ = QuantumCircuit(q)
 
-# Is X rotation called for?
-if args.xrot:
-    circ.x(q[0])
-    circ.x(q[1])
-    circ.x(q[2])
 
-# Add a H gate on qubit 0, putting this qubit in superposition.
+# Generate Bell state
 circ.h(q[0])
-circ.h(q[1])
 circ.h(q[2])
+circ.h(q[4])
 
-# CNOTs for entaglement (only 0-1 and 1-2 supported)
-if args.cnot and len(args.cnot) > 0:
-    for i in args.cnot:
-        circ.cx(q[i + 1], q[i])
+circ.cx(q[0], q[1])
+circ.cx(q[2], q[3])
+circ.cx(q[4], q[5])
+
+circ.x(q[0])
+circ.x(q[1])
+circ.x(q[2])
 
 # drawing the circuit
 if args.drawcircuit:
@@ -173,7 +172,9 @@ meas = QuantumCircuit(q, c)
 meas.barrier(q)
 
 # map the quantum measurement to the classical bits
-meas.measure(q, c)
+meas.measure(q[1], c[0])
+meas.measure(q[3], c[1])
+meas.measure(q[5], c[2])
 
 # The Qiskit circuit object supports composition using
 # the addition operator.
@@ -207,8 +208,8 @@ else:
         backend = IBMQ.get_backend('ibmq_qasm_simulator')
     else:
         from qiskit.providers.ibmq import least_busy
-        large_enough_devices = IBMQ.backends(filters=lambda x: x.configuration().n_qubits > 4
-                                             and not x.configuration().simulator)
+        large_enough_devices = IBMQ.backends(filters=lambda x: x.configuration().n_qubits > 5 and
+                                             not x.configuration().simulator)
         backend = least_busy(large_enough_devices)
         print("The best backend is " + backend.name())
 
