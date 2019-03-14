@@ -119,6 +119,9 @@ group.add_argument("-s", "--sim", action="store_true",
                    help="Use IBMQ qasm simulator")
 group.add_argument("-a", "--aer", action="store_true",
                    help="User QISKit aer simulator")
+parser.add_argument("-b", "--backend", action="store",
+                    help="""genuine qpu backend to use, default is least busy
+                    of large enough devices""")
 parser.add_argument("-d", "--drawcircuit", action="store_true",
                     help="Draw the circuit in extended charset")
 parser.add_argument("-i", "--identity", action="store",
@@ -207,11 +210,14 @@ else:
     if args.sim:
         backend = IBMQ.get_backend('ibmq_qasm_simulator')
     else:
-        from qiskit.providers.ibmq import least_busy
-        large_enough_devices = IBMQ.backends(filters=lambda x: x.configuration().n_qubits > 5 and
-                                             not x.configuration().simulator)
-        backend = least_busy(large_enough_devices)
-        print("The best backend is " + backend.name())
+        if args.backend:
+            backend = IBMQ.get_backend(args.backend)
+        else:
+            from qiskit.providers.ibmq import least_busy
+            large_enough_devices = IBMQ.backends(filters=lambda x: x.configuration().n_qubits > 5
+                                                 and not x.configuration().simulator)
+            backend = least_busy(large_enough_devices)
+            print("The best backend is " + backend.name())
 
 print("Backend is", end=" ")
 print(backend)
