@@ -72,7 +72,7 @@ For the purpose of the oracle, a 1-bit counts as 3 and a 0-bit as 2.
 The most-measured classical 3-bit value that emerges from 1024 shots is
 the winning 3-coin toss for that line of the hexagram,
 
-The quantum computation in qasm:
+The quantum computation in qasm (see the --qasm switch):
 
 OPENQASM 2.0;
 include "qelib1.inc";
@@ -85,8 +85,8 @@ cx q[0],q[1];
 cx q[2],q[3];
 cx q[4],q[5];
 x q[0];
-x q[1];
 x q[2];
+x q[4];
 barrier q[0],q[1],q[2],q[3],q[4],q[5];
 measure q[1] -> c[0];
 measure q[3] -> c[1];
@@ -149,7 +149,6 @@ q = QuantumRegister(6, 'q')
 # Create a Quantum Circuit acting on the q register
 circ = QuantumCircuit(q)
 
-
 # Generate Bell state
 circ.h(q[0])
 circ.h(q[2])
@@ -160,8 +159,8 @@ circ.cx(q[2], q[3])
 circ.cx(q[4], q[5])
 
 circ.x(q[0])
-circ.x(q[1])
 circ.x(q[2])
+circ.x(q[4])
 
 # drawing the circuit
 if args.drawcircuit:
