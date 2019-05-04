@@ -1,17 +1,17 @@
-# qyq.py ... Main script. Run and render.
-# QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
-# Copyright 2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
-# BSD-3 license -- See LICENSE which you should have received with this code.
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+"""qyq.py ... Main script. Run and render.
+QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
+Copyright 2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
+BSD-3 license -- See LICENSE which you should have received with this code.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES."""
+
+import argparse
+
+from qiskit.tools.monitor import job_monitor
+from qiskit import execute, QuantumCircuit, ClassicalRegister, QuantumRegister
 
 import qyqhex as qh
-from qiskit.tools.monitor import job_monitor
-from qiskit import execute
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
-import numpy as np
-import argparse
-import sys
+
 explanation = """QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
 Copyright 2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
 BSD-3 license -- See LICENSE which you should have received with this code.
@@ -107,8 +107,9 @@ If more than two classical bit patterns emerge with identical frequency, only
 the first and last are considered.
 
 At the end all counts are printed in CSV format, in toss order.
-At present, this feature does not work correctly when all possible outcomes do not occur at least once.
-In particular, it does not work correctly with the Aer state vector simulator.
+At present, this feature does not work correctly when all possible outcomes
+do not occur at least once. In particular, it does not work correctly with the
+Aer state vector simulator.
 """
 
 parser = argparse.ArgumentParser(description=explanation)
@@ -122,12 +123,14 @@ group.add_argument("-a", "--aer", action="store_true",
 parser.add_argument("-b", "--backend", action="store",
                     help="""genuine qpu backend to use, default is least busy
                     of large enough devices""")
+parser.add_argument("-c", "--max_credits", type=int, action="store", default=3,
+                    help="max credits to expend on run, default is 3")
 parser.add_argument("-d", "--drawcircuit", action="store_true",
                     help="Draw the circuit in extended charset")
 parser.add_argument("-i", "--identity", action="store",
                     help="IBM Q Experience identity token")
-parser.add_argument("-m", "--max_credits", type=int, action="store", default=3,
-                    help="max credits to expend, default is 3")
+parser.add_argument("-m", "--memory", action="store_true",
+                    help="Print individual results of multishot experiment")
 parser.add_argument("--qasm", action="store_true",
                     help="Show the qasm for the circuit")
 parser.add_argument("--shots", type=int, action="store", default=1024,
@@ -221,7 +224,7 @@ else:
 print("Backend is", end=" ")
 print(backend)
 
-if backend == None:
+if backend is None:
     print("No backend available, quitting.")
     exit(100)
 
@@ -234,11 +237,16 @@ h = qh.QYQHexagram(backend)
 # Each complete run provides the bit dictionary for one line.
 for i in range(0, 6):
     job_exp = execute(qc, backend=backend, shots=args.shots,
-                      max_credits=args.max_credits)
+                      max_credits=args.max_credits, memory=args.memory)
     job_monitor(job_exp)
 
     result_exp = job_exp.result()
 
+    # Raw data if requested
+    if args.memory:
+        print(result_exp.data())
+
+    # Prepare data
     counts_exp = result_exp.get_counts(qc)
     print(counts_exp)
     sorted_keys = sorted(counts_exp.keys())
@@ -246,8 +254,10 @@ for i in range(0, 6):
     for i in sorted_keys:
         sorted_counts[i] = counts_exp[i]
 
+    # Print the sorted counts
     print(sorted_counts)
 
+    # Generate and draw hexagram
     h.assimilate(counts_exp)
     h.draw(True)  # draw reversed
 

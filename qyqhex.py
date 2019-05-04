@@ -1,9 +1,9 @@
-# qyqhex.py ... Calculate hexagram and changed hexagram from IBMQ bit dictionary
-# QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
-# Copyright 2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
-# BSD-3 license -- See LICENSE which you should have received with this code.
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# WIHTOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+"""qyqhex.py ... Calculate hexagram and changed hexagram from IBMQ bit dictionary
+QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
+Copyright 2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
+BSD-3 license -- See LICENSE which you should have received with this code.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES."""
 
 import datetime as dt
 
@@ -46,34 +46,35 @@ class QYQLine:
 
     def draw(self):
         """Render the line"""
-        l = '***'
+        the_line = '***'
         if self.yang_yin:
             if self.changing:
-                l += '000'
+                the_line += '000'
             else:
-                l += '***'
+                the_line += '***'
         else:
             if self.changing:
-                l += 'XXX'
+                the_line += 'XXX'
             else:
-                l += '   '
-        l += '***'
-        return l
+                the_line += '   '
+        the_line += '***'
+        return the_line
 
     def draw_changed(self):
         """Render a changed line for the second hexagram"""
         if self.yang_yin:
             if self.changing:
-                l = '***   ***'
+                the_line = '***   ***'
             else:
-                l = '*********'
+                the_line = '*********'
         else:
             if self.changing:
-                l = '*********'
+                the_line = '*********'
             else:
-                l = '***   ***'
-        return l
+                the_line = '***   ***'
+        return the_line
 
+    @staticmethod
     def interp(bit_dict):
         """Analyse a bit dictionary and create the line"""
         best = 0
@@ -82,13 +83,13 @@ class QYQLine:
             val = bit_dict[i]
             if val == best:
                 bits[1] = i
-                if bits[0] == None:
+                if bits[0] is None:
                     bits[0] = i
             elif val > best:
                 best = val
                 bits[1] = None
                 bits[0] = i
-        if bits[1] == None:
+        if bits[1] is None:
             return QYQLine.newFromPattern(QYQLine.getPattern(bits[0]))
         else:
             x = [QYQLine.getPattern(bits[0]), QYQLine.getPattern(bits[1])]
@@ -131,7 +132,7 @@ class QYQHexagram:
     def __init__(self, backend, lines=None):
         self.backend = backend
         self.qyqTimeCountsCollection = []
-        if lines == None:
+        if lines is None:
             self.lines = []
         else:
             self.lines = lines
@@ -154,7 +155,7 @@ class QYQHexagram:
             # print(qinglines)
 
         for i in qinglines:
-            print (i.draw() + '   ' + i.draw_changed())
+            print(i.draw() + '   ' + i.draw_changed())
 
     def csv(self):
         """Create a csv of the hex run"""
@@ -172,9 +173,10 @@ class QYQHexagram:
             result += "\n"
         return result
 
-    def test(self):
+    @staticmethod
+    def test():
         """Test routine"""
-        h = QYQHexagram()
+        h = QYQHexagram(None)
         h.add(QYQLine(True, False))
         h.add(QYQLine(True, True))
         h.add(QYQLine(True, False))
