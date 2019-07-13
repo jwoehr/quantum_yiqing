@@ -127,16 +127,16 @@ parser.add_argument("-c", "--max_credits", type=int, action="store", default=3,
                     help="max credits to expend on run, default is 3")
 parser.add_argument("-d", "--drawcircuit", action="store_true",
                     help="Draw the circuit in extended charset")
-parser.add_argument("-i", "--identity", action="store",
-                    help="IBM Q Experience identity token")
 parser.add_argument("-m", "--memory", action="store_true",
                     help="Print individual results of multishot experiment")
 parser.add_argument("--qasm", action="store_true",
                     help="Show the qasm for the circuit")
 parser.add_argument("--shots", type=int, action="store", default=1024,
                     help="number of execution shots, default is 1024")
-parser.add_argument("--url", action="store", default='https://quantumexperience.ng.bluemix.net/api',
-                    help="URL, default is https://quantumexperience.ng.bluemix.net/api")
+parser.add_argument("--token", action="store",
+                    help="Use this token if a --url argument is also provided")
+parser.add_argument("--url", action="store",
+                    help="Use this url if a --token argument is also provided")
 parser.add_argument("-u", "--usage", action="store_true",
                     help="Show long usage message and exit 0")
 
@@ -145,6 +145,10 @@ args = parser.parse_args()
 if args.usage:
     print(long_explanation)
     exit(0)
+
+if (args.token and not args.url) or (args.url and not args.token):
+    print('--token and --url must be used together or not at all', file=sys.stderr)
+    exit(1)
 
 # Create a Quantum Register with 6 qubits.
 q = QuantumRegister(6, 'q')
@@ -203,20 +207,20 @@ if args.aer:
     backend = BasicAer.get_backend('statevector_simulator')
 else:
     from qiskit import IBMQ
-    if args.identity:
-        IBMQ.enable_account(args.identity, url=args.url)
+    if args.token:
+        provider = IBMQ.enable_account(args.token, url=args.url)
     else:
-        IBMQ.load_accounts()
+        provider = IBMQ.load_account()
 
     # Choose backend and connect
     if args.sim:
-        backend = IBMQ.get_backend('ibmq_qasm_simulator')
+        backend = provider.get_backend('ibmq_qasm_simulator')
     else:
         if args.backend:
-            backend = IBMQ.get_backend(args.backend)
+            backend = provider.get_backend(args.backend)
         else:
             from qiskit.providers.ibmq import least_busy
-            large_enough_devices = IBMQ.backends(filters=lambda x: x.configuration().n_qubits > 5
+            large_enough_devices = provider.backends(filters=lambda x: x.configuration().n_qubits > 5
                                                  and not x.configuration().simulator)
             backend = least_busy(large_enough_devices)
             print("The best backend is " + backend.name())
