@@ -34,6 +34,13 @@ which can be retrieved by qiskit.IBMQ.load_accounts(). Alternatively, the
 token can be provided via the -i --identity switch. Additionally, the
 --url switch can provide a specific url.
 
+Quantum Inspire (https://www.qutech.nl/) simulator is also supported.
+
+Default for QI is to assume the user has stored a QI account identity token
+as explained on the Quantum Inspire SDK GitHub page
+(https://github.com/QuTech-Delft/quantuminspire). Alternatively, the token can
+be provided via the -i --identity switch.
+
 Type -h or --help for important options information.
 
 Traditionally done with yarrowstalks in an intricate procedure to guarantee
@@ -62,12 +69,15 @@ In the program, the lines of the primary hexagram are represented as follows:
 In the derivative hexagram, the "changing" notion is abstracted and the
 hexagram stands as calculated per above.
 
-The quantum program uses 6 qubits and puts them by pairs in a Bell state, e.g.,
+The inline quantum program uses 6 qubits and puts them by pairs in a Bell state:
 h q[0];
 cx q[0],q[1];
 x q[0];
 
 It measures the entangled bits q[1], q[3], q[5].
+
+You may alternatively provide via the -f switch  a QASM file returning three
+classical bits. This will be used instead of the inline program.
 
 For the purpose of the oracle, a 1-bit counts as 3 and a 0-bit as 2.
 
