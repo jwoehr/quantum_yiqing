@@ -41,6 +41,8 @@ as explained on the Quantum Inspire SDK GitHub page
 (https://github.com/QuTech-Delft/quantuminspire). Alternatively, the token can
 be provided via the -i --identity switch.
 
+To use QI support you must also have installed the Quantum Inspire SDK.
+
 Type -h or --help for important options information.
 
 Traditionally done with yarrowstalks in an intricate procedure to guarantee
