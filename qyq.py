@@ -134,6 +134,8 @@ GROUP.add_argument("-s", "--sim", action="store_true",
                    help="Use IBMQ qasm simulator")
 GROUP.add_argument("-a", "--aer", action="store_true",
                    help="User QISKit aer simulator")
+GROUP.add_argument("-g", "--qcgpu", action="store_true",
+                   help="Use qcgpu simulator (requires GPU)")
 PARSER.add_argument("--api_provider", action="store",
                     help="""Backend api provider,
                     currently supported are [IBMQ | QI].
@@ -252,14 +254,17 @@ def account_fu(token, url):
 # ##############
 
 
-def choose_backend(aer, token, url, b_end, sim, qubits):
+def choose_backend(local_sim, token, url, b_end, sim, qubits):
     """Return backend selected by user if account will activate and allow."""
     backend = None
-    if aer:
+    if local_sim == 'aer':
         # Import Aer
         from qiskit import BasicAer
         # Run the quantum circuit on a statevector simulator backend
         backend = BasicAer.get_backend('statevector_simulator')
+    elif local_sim == 'qcgpu':
+        from qiskit_qcgpu_provider import QCGPUProvider
+        backend = QCGPUProvider().get_backend('qasm_simulator')
     else:
         provider = account_fu(token, url)
         verbosity("Provider is " + str(provider), 3)
@@ -312,8 +317,15 @@ if ARGS.drawcircuit:
 
 API_PROVIDER = ARGS.api_provider.upper()
 
+# Did user call for local simulator?
+LOCAL_SIM = ''
+if ARGS.aer:
+    LOCAL_SIM = 'aer'
+elif ARGS.qcgpu:
+    LOCAL_SIM = 'qcgpu'
+
 # Choose backend
-BACKEND = choose_backend(ARGS.aer, ARGS.token, ARGS.url,
+BACKEND = choose_backend(LOCAL_SIM, ARGS.token, ARGS.url,
                          ARGS.backend, ARGS.sim, 6)
 
 print("Backend is " + str(BACKEND))
