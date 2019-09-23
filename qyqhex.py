@@ -160,7 +160,7 @@ class QYQHexagram:
 
     def csv(self):
         """Create a csv of the hex run"""
-        result = str(self.provider + ':' + self.backend) + ';'
+        result = str(self.provider) + ':' + str(self.backend) + ';'
         for i in QYQLine.patt.keys():
             result += i
             result += ";"
