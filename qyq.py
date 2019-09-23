@@ -8,6 +8,7 @@ WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES."""
 import argparse
 import sys
 
+from qiskit.converters import circuit_to_dag
 from qiskit.tools.monitor import job_monitor
 from qiskit import (IBMQ, execute, QuantumCircuit,
                     ClassicalRegister, QuantumRegister)
@@ -306,6 +307,8 @@ if API_PROVIDER == "IBMQ" and ((TOKEN and not URL) or (URL and not TOKEN)):
     exit(1)
 
 QC = create_circuit(ARGS.filepath)
+NUM_QUBITS = circuit_to_dag(QC).num_qubits()
+verbosity("NUM_QUBITS == " + str(NUM_QUBITS), 2)
 
 # show qasm
 if ARGS.qasm:
@@ -326,7 +329,7 @@ elif ARGS.qcgpu:
 
 # Choose backend
 BACKEND = choose_backend(LOCAL_SIM, ARGS.token, ARGS.url,
-                         ARGS.backend, ARGS.sim, 6)
+                         ARGS.backend, ARGS.sim, NUM_QUBITS)
 
 print("Backend is " + str(BACKEND))
 
