@@ -315,14 +315,14 @@ if ARGS.qasm:
 if ARGS.drawcircuit:
     print(QC.draw())
 
-API_PROVIDER = ARGS.api_provider.upper()
-
 # Did user call for local simulator?
 LOCAL_SIM = ''
 if ARGS.aer:
     LOCAL_SIM = 'aer'
+    API_PROVIDER = 'aer'
 elif ARGS.qcgpu:
     LOCAL_SIM = 'qcgpu'
+    API_PROVIDER = 'qcgpu'
 
 # Choose backend
 BACKEND = choose_backend(LOCAL_SIM, ARGS.token, ARGS.url,
@@ -335,7 +335,7 @@ if BACKEND is None:
     exit(100)
 
 # Prepare to render
-H = qh.QYQHexagram(BACKEND)
+H = qh.QYQHexagram(API_PROVIDER, BACKEND)
 
 # Loop running circuit and measuring.
 # Each complete run provides the bit dictionary for one line.

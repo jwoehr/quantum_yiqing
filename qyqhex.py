@@ -129,7 +129,8 @@ class QYQHexagram:
     and draws hexagram and changed hexagram
     """
 
-    def __init__(self, backend, lines=None):
+    def __init__(self, provider, backend, lines=None):
+        self.provider = provider
         self.backend = backend
         self.qyqTimeCountsCollection = []
         if lines is None:
@@ -159,7 +160,7 @@ class QYQHexagram:
 
     def csv(self):
         """Create a csv of the hex run"""
-        result = str(self.backend) + ';'
+        result = str(self.provider + ':' + self.backend) + ';'
         for i in QYQLine.patt.keys():
             result += i
             result += ";"
@@ -176,7 +177,7 @@ class QYQHexagram:
     @staticmethod
     def test():
         """Test routine"""
-        h = QYQHexagram(None)
+        h = QYQHexagram('Test', 'Test')
         h.add(QYQLine(True, False))
         h.add(QYQLine(True, True))
         h.add(QYQLine(True, False))
