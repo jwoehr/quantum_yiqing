@@ -151,6 +151,9 @@ PARSER.add_argument("-d", "--drawcircuit", action="store_true",
 PARSER.add_argument("-f", "--filepath", type=str, action="store",
                     help="""OPENQASM 2.0 file to use for the oracle circuit,
                     must return 3 classical bits""")
+PARSER.add_argument("--from_csv", action="store",
+                    help="""Load a csv file previously output by Quantum Yi Qing
+                    and display the pair of hexagrams it represents""")
 PARSER.add_argument("-m", "--memory", action="store_true",
                     help="Print individual results of multishot experiment")
 PARSER.add_argument("--qasm", action="store_true",
@@ -296,9 +299,14 @@ ARGS = PARSER.parse_args()
 API_PROVIDER = ARGS.api_provider.upper()
 TOKEN = ARGS.token
 URL = ARGS.url
+FROM_CSV = ARGS.from_csv
 
 if ARGS.usage:
     print(LONG_EXPLANATION)
+    exit(0)
+
+if FROM_CSV:
+    qh.QYQHexagram.from_csv(FROM_CSV)
     exit(0)
 
 if API_PROVIDER == "IBMQ" and ((TOKEN and not URL) or (URL and not TOKEN)):

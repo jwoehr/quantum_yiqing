@@ -6,6 +6,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES."""
 
 import datetime as dt
+import csv
 
 # Embody and render a line of a hexagram
 # Keeps state so changed line can be rendered
@@ -173,6 +174,32 @@ class QYQHexagram:
                 result += ";"
             result += "\n"
         return result
+
+    @staticmethod
+    def from_csv(csv_filename):
+        bit_keys = ['000', '001', '010', '011', '100', '101', '110', '111']
+
+        _qyqh = QYQHexagram('', '')
+
+        with open(csv_filename) as _csvfile:
+
+            r = csv.reader(_csvfile, delimiter=';')
+            rows = []
+            for row in r:
+                rows.append(row)
+            rows = rows[1:7]
+            for row in rows:
+                line_dict = {}
+                row_list = []
+                for item in row:
+                    row_list.append(item)
+                row_list = row_list[1:9]
+                for i in range(0, 8):
+                    line_dict[bit_keys[i]] = int(row_list[i])
+                _qyqh.assimilate(line_dict)
+
+        _csvfile.close()
+        _qyqh.draw(True)
 
     @staticmethod
     def test():
