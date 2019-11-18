@@ -4,4 +4,4 @@ v2.2 2019-11-17
 	- support qcgpu
 	- print the provider as well as backend
 	- set number of qubits correctly depending on the yiqing program offered
-	--from_csv reloads a Quantum Yi Qing CSV file and displays hexagram pair
+	- --from_csv reloads a Quantum Yi Qing CSV file and displays hexagram pair

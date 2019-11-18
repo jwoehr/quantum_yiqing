@@ -17,11 +17,14 @@ To use IBM Q Experience online devices and/or simulator(s), you must have an acc
 To use QI support you must also have installed the [Quantum Inspire SDK](https://github.com/QuTech-Delft/quantuminspire)
 and have a token provided with your account from the [QuTech website](https://www.qutech.nl/).
 
+To use QCGPU support you must also have installed [qisit-qcgpu-provider](https://github.com/qiskit-community/qiskit-qcgpu-provider)
+
 ```
 $ python qyq.py --help
-usage: qyq.py [-h] [-q | -s | -a] [--api_provider API_PROVIDER] [-b BACKEND]
-              [-c MAX_CREDITS] [-d] [-f FILEPATH] [-m] [--qasm]
-              [--shots SHOTS] [--token TOKEN] [--url URL] [-u] [-v]
+usage: qyq.py [-h] [-q | -s | -a | -g] [--api_provider API_PROVIDER]
+              [-b BACKEND] [-c MAX_CREDITS] [-d] [-f FILEPATH]
+              [--from_csv FROM_CSV] [-m] [--qasm] [--shots SHOTS]
+              [--token TOKEN] [--url URL] [-u] [-v]
 
 QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast. Copyright
 2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051 BSD-3
@@ -34,6 +37,7 @@ optional arguments:
   -q, --ibmq            Use genuine IBMQ processor (default)
   -s, --sim             Use IBMQ qasm simulator
   -a, --aer             User QISKit aer simulator
+  -g, --qcgpu           Use qcgpu simulator (requires GPU)
   --api_provider API_PROVIDER
                         Backend api provider, currently supported are [IBMQ |
                         QI]. Default is IBMQ.
@@ -46,6 +50,8 @@ optional arguments:
   -f FILEPATH, --filepath FILEPATH
                         OPENQASM 2.0 file to use for the oracle circuit, must
                         return 3 classical bits
+  --from_csv FROM_CSV   Load a csv file previously output by Quantum Yi Qing
+                        and display the pair of hexagrams it represents
   -m, --memory          Print individual results of multishot experiment
   --qasm                Show the qasm for the circuit
   --shots SHOTS         number of execution shots, default is 1024
