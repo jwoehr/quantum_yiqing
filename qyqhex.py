@@ -177,6 +177,9 @@ class QYQHexagram:
 
     @staticmethod
     def from_csv(csv_filename):
+        """Load a csv file previously output by Quantum Yi Qing
+        and display the pair of hexagrams it represents"""
+
         bit_keys = ['000', '001', '010', '011', '100', '101', '110', '111']
 
         _qyqh = QYQHexagram('', '')
