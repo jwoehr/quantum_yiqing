@@ -1,5 +1,11 @@
 Changes to Quantum Yi Qing
 
+v2.3
+	- Updated QI support now must specify backend currently `Starmon-5`
+		- Use `-f yiqing_5.qasm` for `Starmon-5`
+	- Truncates the count keys into the sorted counts and use sorted counts
+		- Necessary to evaluate backend that returns more than 3 clbits
+
 v2.2 2019-11-17
 	- support qcgpu
 	- print the provider as well as backend

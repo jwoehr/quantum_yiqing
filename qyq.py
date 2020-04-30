@@ -166,6 +166,8 @@ PARSER.add_argument("--url", action="store",
                     help="Use this url if a --token argument is also provided")
 PARSER.add_argument("-u", "--usage", action="store_true",
                     help="Show long usage message and exit 0")
+PARSER.add_argument("--use_job_monitor", action="store_true",
+                    help="Use the job monitor (doesn't work with QI)")
 PARSER.add_argument("-v", "--verbose", action="count", default=0,
                     help="Increase verbosity each -v up to 3")
 
@@ -300,6 +302,7 @@ API_PROVIDER = ARGS.api_provider.upper()
 TOKEN = ARGS.token
 URL = ARGS.url
 FROM_CSV = ARGS.from_csv
+USE_JM = ARGS.use_job_monitor
 
 if ARGS.usage:
     print(LONG_EXPLANATION)
@@ -353,7 +356,8 @@ H = qh.QYQHexagram(API_PROVIDER, BACKEND)
 for i in range(0, 6):
     job_exp = execute(QC, backend=BACKEND, shots=ARGS.shots,
                       max_credits=ARGS.max_credits, memory=ARGS.memory)
-    job_monitor(job_exp)
+    if USE_JM:
+        job_monitor(job_exp)
 
     result_exp = job_exp.result()
 
@@ -367,13 +371,16 @@ for i in range(0, 6):
     sorted_keys = sorted(counts_exp.keys())
     sorted_counts = {}
     for j in sorted_keys:
-        sorted_counts[j] = counts_exp[j]
+        k = j
+        if len(j) >3:  # truncate left if necessary
+            k = j[len(j)-3:]
+        sorted_counts[k] = counts_exp[j]
 
     # Print the sorted counts
     print(sorted_counts)
 
     # Generate and draw hexagram
-    H.assimilate(counts_exp)
+    H.assimilate(sorted_counts)
     H.draw(True)  # draw reversed
 
 print("CSV of run:")
