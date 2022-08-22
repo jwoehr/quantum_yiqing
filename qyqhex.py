@@ -14,20 +14,22 @@ import csv
 
 class QYQLine:
     """Interpret a bit pattern as a hexagram line"""
+
     yin_c = [False, True]
     yang_u = [True, False]
     yin_u = [False, False]
     yang_c = [True, True]
 
-    patt = {'000': yin_c,
-            '001': yang_u,
-            '010': yang_u,
-            '011': yin_u,
-            '100': yang_u,
-            '101': yin_u,
-            '110': yin_u,
-            '111': yang_c
-            }
+    patt = {
+        "000": yin_c,
+        "001": yang_u,
+        "010": yang_u,
+        "011": yin_u,
+        "100": yang_u,
+        "101": yin_u,
+        "110": yin_u,
+        "111": yang_c,
+    }
     """The string pattern for the c-bits"""
 
     def __init__(self, yang_yin, changing):
@@ -47,32 +49,32 @@ class QYQLine:
 
     def draw(self):
         """Render the line"""
-        the_line = '***'
+        the_line = "***"
         if self.yang_yin:
             if self.changing:
-                the_line += '000'
+                the_line += "000"
             else:
-                the_line += '***'
+                the_line += "***"
         else:
             if self.changing:
-                the_line += 'XXX'
+                the_line += "XXX"
             else:
-                the_line += '   '
-        the_line += '***'
+                the_line += "   "
+        the_line += "***"
         return the_line
 
     def draw_changed(self):
         """Render a changed line for the second hexagram"""
         if self.yang_yin:
             if self.changing:
-                the_line = '***   ***'
+                the_line = "***   ***"
             else:
-                the_line = '*********'
+                the_line = "*********"
         else:
             if self.changing:
-                the_line = '*********'
+                the_line = "*********"
             else:
-                the_line = '***   ***'
+                the_line = "***   ***"
         return the_line
 
     @staticmethod
@@ -157,11 +159,11 @@ class QYQHexagram:
             # print(qinglines)
 
         for i in qinglines:
-            print(i.draw() + '   ' + i.draw_changed())
+            print(i.draw() + "   " + i.draw_changed())
 
     def csv(self):
         """Create a csv of the hex run"""
-        result = str(self.provider) + ':' + str(self.backend) + ';'
+        result = str(self.provider) + ":" + str(self.backend) + ";"
         for i in QYQLine.patt.keys():
             result += i
             result += ";"
@@ -180,13 +182,13 @@ class QYQHexagram:
         """Load a csv file previously output by Quantum Yi Qing
         and display the pair of hexagrams it represents"""
 
-        bit_keys = ['000', '001', '010', '011', '100', '101', '110', '111']
+        bit_keys = ["000", "001", "010", "011", "100", "101", "110", "111"]
 
-        _qyqh = QYQHexagram('', '')
+        _qyqh = QYQHexagram("", "")
 
         with open(csv_filename) as _csvfile:
 
-            r = csv.reader(_csvfile, delimiter=';')
+            r = csv.reader(_csvfile, delimiter=";")
             rows = []
             for row in r:
                 rows.append(row)
@@ -207,7 +209,7 @@ class QYQHexagram:
     @staticmethod
     def test():
         """Test routine"""
-        h = QYQHexagram('Test', 'Test')
+        h = QYQHexagram("Test", "Test")
         h.add(QYQLine(True, False))
         h.add(QYQLine(True, True))
         h.add(QYQLine(True, False))
@@ -216,5 +218,6 @@ class QYQHexagram:
         h.add(QYQLine(False, False))
         h.draw()
         h.draw(True)
+
 
 # End

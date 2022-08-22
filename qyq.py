@@ -1,6 +1,6 @@
 """qyq.py ... Main script. Run and render.
 QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
-Copyright 2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
+Copyright 2019, 2022 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
 BSD-3 license -- See LICENSE which you should have received with this code.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES."""
@@ -10,8 +10,7 @@ import sys
 
 from qiskit.converters import circuit_to_dag
 from qiskit.tools.monitor import job_monitor
-from qiskit import (IBMQ, execute, QuantumCircuit,
-                    ClassicalRegister, QuantumRegister)
+from qiskit import IBMQ, execute, QuantumCircuit, ClassicalRegister, QuantumRegister
 
 import qyqhex as qh
 
@@ -129,47 +128,86 @@ Aer state vector simulator.
 
 PARSER = argparse.ArgumentParser(description=EXPLANATION)
 GROUP = PARSER.add_mutually_exclusive_group()
-GROUP.add_argument("-q", "--ibmq", action="store_true",
-                   help="Use genuine IBMQ processor (default)")
-GROUP.add_argument("-s", "--sim", action="store_true",
-                   help="Use IBMQ qasm simulator")
-GROUP.add_argument("-a", "--aer", action="store_true",
-                   help="User QISKit aer simulator")
-GROUP.add_argument("-g", "--qcgpu", action="store_true",
-                   help="Use qcgpu simulator (requires GPU)")
-PARSER.add_argument("--api_provider", action="store",
-                    help="""Backend api provider,
+GROUP.add_argument(
+    "-q", "--ibmq", action="store_true", help="Use genuine IBMQ processor (default)"
+)
+GROUP.add_argument("-s", "--sim", action="store_true", help="Use IBMQ qasm simulator")
+GROUP.add_argument("-a", "--aer", action="store_true", help="User QISKit aer simulator")
+GROUP.add_argument(
+    "-g", "--qcgpu", action="store_true", help="Use qcgpu simulator (requires GPU)"
+)
+PARSER.add_argument(
+    "--api_provider",
+    action="store",
+    help="""Backend api provider,
                     currently supported are [IBMQ | QI].
-                    Default is IBMQ.""", default="IBMQ")
-PARSER.add_argument("-b", "--backend", action="store",
-                    help="""genuine qpu backend to use, default is least busy
-                    of large enough devices""")
-PARSER.add_argument("-c", "--max_credits", type=int, action="store", default=3,
-                    help="max credits to expend on run, default is 3")
-PARSER.add_argument("-d", "--drawcircuit", action="store_true",
-                    help="Draw the circuit in extended charset")
-PARSER.add_argument("-f", "--filepath", type=str, action="store",
-                    help="""OPENQASM 2.0 file to use for the oracle circuit,
-                    must return 3 classical bits""")
-PARSER.add_argument("--from_csv", action="store",
-                    help="""Load a csv file previously output by Quantum Yi Qing
-                    and display the pair of hexagrams it represents""")
-PARSER.add_argument("-m", "--memory", action="store_true",
-                    help="Print individual results of multishot experiment")
-PARSER.add_argument("--qasm", action="store_true",
-                    help="Show the qasm for the circuit")
-PARSER.add_argument("--shots", type=int, action="store", default=1024,
-                    help="number of execution shots, default is 1024")
-PARSER.add_argument("--token", action="store",
-                    help="Use this token if a --url argument is also provided")
-PARSER.add_argument("--url", action="store",
-                    help="Use this url if a --token argument is also provided")
-PARSER.add_argument("-u", "--usage", action="store_true",
-                    help="Show long usage message and exit 0")
-PARSER.add_argument("--use_job_monitor", action="store_true",
-                    help="Use the job monitor (doesn't work with QI)")
-PARSER.add_argument("-v", "--verbose", action="count", default=0,
-                    help="Increase verbosity each -v up to 3")
+                    Default is IBMQ.""",
+    default="IBMQ",
+)
+PARSER.add_argument(
+    "-b",
+    "--backend",
+    action="store",
+    help="""genuine qpu backend to use, default is least busy
+                    of large enough devices""",
+)
+PARSER.add_argument(
+    "-d",
+    "--drawcircuit",
+    action="store_true",
+    help="Draw the circuit in extended charset",
+)
+PARSER.add_argument(
+    "-f",
+    "--filepath",
+    type=str,
+    action="store",
+    help="""OPENQASM 2.0 file to use for the oracle circuit,
+                    must return 3 classical bits""",
+)
+PARSER.add_argument(
+    "--from_csv",
+    action="store",
+    help="""Load a csv file previously output by Quantum Yi Qing
+                    and display the pair of hexagrams it represents""",
+)
+PARSER.add_argument(
+    "-m",
+    "--memory",
+    action="store_true",
+    help="Print individual results of multishot experiment",
+)
+PARSER.add_argument("--qasm", action="store_true", help="Show the qasm for the circuit")
+PARSER.add_argument(
+    "--shots",
+    type=int,
+    action="store",
+    default=1024,
+    help="number of execution shots, default is 1024",
+)
+PARSER.add_argument(
+    "--token",
+    action="store",
+    help="Use this token if a --url argument is also provided",
+)
+PARSER.add_argument(
+    "--url", action="store", help="Use this url if a --token argument is also provided"
+)
+PARSER.add_argument(
+    "-u", "--usage", action="store_true", help="Show long usage message and exit 0"
+)
+PARSER.add_argument(
+    "--use_job_monitor",
+    action="store_true",
+    help="Use the job monitor (doesn't work with QI)",
+)
+PARSER.add_argument(
+    "-v",
+    "--verbose",
+    action="count",
+    default=0,
+    help="Increase verbosity each -v up to 3",
+)
 
 
 def verbosity(text, count):
@@ -186,7 +224,7 @@ def create_circuit(filepath=None):
 
     else:
         # Create a Quantum Register with 6 qubits.
-        q = QuantumRegister(6, 'q')
+        q = QuantumRegister(6, "q")
 
         # Create a Quantum Circuit acting on the q register
         circ = QuantumCircuit(q)
@@ -209,7 +247,7 @@ def create_circuit(filepath=None):
             print(circ.draw())
 
         # Create a Classical Register with 3 bits.
-        c = ClassicalRegister(3, 'c')
+        c = ClassicalRegister(3, "c")
 
         # Create a Quantum Circuit
         meas = QuantumCircuit(q, c)
@@ -222,7 +260,7 @@ def create_circuit(filepath=None):
 
         # The Qiskit circuit object supports composition using
         # the addition operator.
-        qc = circ + meas
+        qc = circ.compose(meas)
 
     return qc
 
@@ -240,6 +278,7 @@ def qi_account_fu(token):
     """Load Quantum Inspire account appropriately and return provider"""
     from quantuminspire.qiskit import QI
     from quantuminspire.credentials import enable_account
+
     if token:
         enable_account(token)
     QI.set_authentication()
@@ -263,29 +302,33 @@ def account_fu(token, url):
 def choose_backend(local_sim, token, url, b_end, sim, qubits):
     """Return backend selected by user if account will activate and allow."""
     backend = None
-    if local_sim == 'aer':
+    if local_sim == "aer":
         # Import Aer
         from qiskit import BasicAer
+
         # Run the quantum circuit on a statevector simulator backend
-        backend = BasicAer.get_backend('statevector_simulator')
-    elif local_sim == 'qcgpu':
+        backend = BasicAer.get_backend("statevector_simulator")
+    elif local_sim == "qcgpu":
         from qiskit_qcgpu_provider import QCGPUProvider
-        backend = QCGPUProvider().get_backend('qasm_simulator')
+
+        backend = QCGPUProvider().get_backend("qasm_simulator")
     else:
         provider = account_fu(token, url)
         verbosity("Provider is " + str(provider), 3)
         verbosity("provider.backends is " + str(provider.backends()), 3)
         if b_end:
             backend = provider.get_backend(b_end)
-            verbosity('b_end provider.get_backend() returns ' + str(backend), 3)
+            verbosity("b_end provider.get_backend() returns " + str(backend), 3)
         elif sim:
-            backend = provider.get_backend('ibmq_qasm_simulator')
-            verbosity('sim provider.get_backend() returns ' + str(backend), 3)
+            backend = provider.get_backend("ibmq_qasm_simulator")
+            verbosity("sim provider.get_backend() returns " + str(backend), 3)
         else:
             from qiskit.providers.ibmq import least_busy
+
             large_enough_devices = provider.backends(
                 filters=lambda x: x.configuration().n_qubits >= qubits
-                and not x.configuration().simulator)
+                and not x.configuration().simulator
+            )
             backend = least_busy(large_enough_devices)
             verbosity("The best backend is " + backend.name(), 2)
     verbosity("Backend is " + str(backend), 1)
@@ -313,8 +356,10 @@ if FROM_CSV:
     exit(0)
 
 if API_PROVIDER == "IBMQ" and ((TOKEN and not URL) or (URL and not TOKEN)):
-    print('--token and --url must be used together for IBMQ provider or not at all',
-          file=sys.stderr)
+    print(
+        "--token and --url must be used together for IBMQ provider or not at all",
+        file=sys.stderr,
+    )
     exit(1)
 
 QC = create_circuit(ARGS.filepath)
@@ -330,17 +375,18 @@ if ARGS.drawcircuit:
     print(QC.draw())
 
 # Did user call for local simulator?
-LOCAL_SIM = ''
+LOCAL_SIM = ""
 if ARGS.aer:
-    LOCAL_SIM = 'aer'
-    API_PROVIDER = 'aer'
+    LOCAL_SIM = "aer"
+    API_PROVIDER = "aer"
 elif ARGS.qcgpu:
-    LOCAL_SIM = 'qcgpu'
-    API_PROVIDER = 'qcgpu'
+    LOCAL_SIM = "qcgpu"
+    API_PROVIDER = "qcgpu"
 
 # Choose backend
-BACKEND = choose_backend(LOCAL_SIM, ARGS.token, ARGS.url,
-                         ARGS.backend, ARGS.sim, NUM_QUBITS)
+BACKEND = choose_backend(
+    LOCAL_SIM, ARGS.token, ARGS.url, ARGS.backend, ARGS.sim, NUM_QUBITS
+)
 
 print("Backend is " + str(BACKEND))
 
@@ -354,8 +400,7 @@ H = qh.QYQHexagram(API_PROVIDER, BACKEND)
 # Loop running circuit and measuring.
 # Each complete run provides the bit dictionary for one line.
 for i in range(0, 6):
-    job_exp = execute(QC, backend=BACKEND, shots=ARGS.shots,
-                      max_credits=ARGS.max_credits, memory=ARGS.memory)
+    job_exp = execute(QC, backend=BACKEND, shots=ARGS.shots, memory=ARGS.memory)
     if USE_JM:
         job_monitor(job_exp)
 
@@ -372,8 +417,8 @@ for i in range(0, 6):
     sorted_counts = {}
     for j in sorted_keys:
         k = j
-        if len(j) >3:  # truncate left if necessary
-            k = j[len(j)-3:]
+        if len(j) > 3:  # truncate left if necessary
+            k = j[len(j) - 3 :]
         sorted_counts[k] = counts_exp[j]
 
     # Print the sorted counts
@@ -386,6 +431,6 @@ for i in range(0, 6):
 print("CSV of run:")
 print(H.csv())
 
-print('Done!')
+print("Done!")
 
 # End
