@@ -23,10 +23,10 @@ class QYQLine:
     patt = {
         "000": yin_c,
         "001": yang_u,
-        "010": yang_u,
+        "010": yang_c,
         "011": yin_u,
         "100": yang_u,
-        "101": yin_u,
+        "101": yin_c,
         "110": yin_u,
         "111": yang_c,
     }
