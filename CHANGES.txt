@@ -5,6 +5,7 @@ v2.3
 		- Use `-f yiqing_5.qasm` for `Starmon-5`
 	- Truncates the count keys into the sorted counts and use sorted counts
 		- Necessary to evaluate backend that returns more than 3 clbits
+	- Changed evaluation of bit pattern.
 
 v2.2 2019-11-17
 	- support qcgpu
