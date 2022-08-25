@@ -1,6 +1,6 @@
 Changes to Quantum Yi Qing
 
-v2.3
+v2.3 2022-08-24
 	- Updated QI support now must specify backend currently `Starmon-5`
 		- Use `-f yiqing_5.qasm` for `Starmon-5`
 	- Truncates the count keys into the sorted counts and use sorted counts
