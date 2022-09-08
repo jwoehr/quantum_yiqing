@@ -226,8 +226,11 @@ def create_circuit(filepath=None):
         # Create a Quantum Register with 6 qubits.
         q = QuantumRegister(6, "q")
 
-        # Create a Quantum Circuit acting on the q register
-        circ = QuantumCircuit(q)
+        # Create a Classical Register with 3 bits.
+        c = ClassicalRegister(3, "c")
+
+        # Create a Quantum Circuit acting on the registers
+        circ = QuantumCircuit(q, c)
 
         # Generate Bell state
         circ.h(q[0])
@@ -242,27 +245,18 @@ def create_circuit(filepath=None):
         circ.x(q[2])
         circ.x(q[4])
 
+        circ.barrier(q)
+
+        # map the quantum measurement to the classical bits
+        circ.measure(q[1], c[0])
+        circ.measure(q[3], c[1])
+        circ.measure(q[5], c[2])
+
         # drawing the circuit
         if ARGS.drawcircuit:
             print(circ.draw())
 
-        # Create a Classical Register with 3 bits.
-        c = ClassicalRegister(3, "c")
-
-        # Create a Quantum Circuit
-        meas = QuantumCircuit(q, c)
-        meas.barrier(q)
-
-        # map the quantum measurement to the classical bits
-        meas.measure(q[1], c[0])
-        meas.measure(q[3], c[1])
-        meas.measure(q[5], c[2])
-
-        # The Qiskit circuit object supports composition using
-        # the addition operator.
-        qc = circ.compose(meas)
-
-    return qc
+    return circ
 
 
 def ibmq_account_fu(token, url):
