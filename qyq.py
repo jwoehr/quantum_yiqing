@@ -219,8 +219,10 @@ def verbosity(text, count):
 def create_circuit(filepath=None):
     """Return circuit from either a qasm file or the inline circuit below."""
 
+    circ = None
+
     if filepath:
-        qc = QuantumCircuit.from_qasm_file(filepath)
+        circ = QuantumCircuit.from_qasm_file(filepath)
 
     else:
         # Create a Quantum Register with 6 qubits.
