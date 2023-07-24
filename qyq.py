@@ -10,8 +10,8 @@ import sys
 
 from qiskit.converters import circuit_to_dag
 from qiskit.tools.monitor import job_monitor
-from qiskit import IBMQ, execute, QuantumCircuit, ClassicalRegister, QuantumRegister
-
+from qiskit import execute, QuantumCircuit, ClassicalRegister, QuantumRegister
+from qiskit_ibm_provider import IBMProvider
 import qyqhex as qh
 
 EXPLANATION = """QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
@@ -264,9 +264,9 @@ def create_circuit(filepath=None):
 def ibmq_account_fu(token, url):
     """Load IBMQ account appropriately and return provider"""
     if token:
-        provider = IBMQ.enable_account(token, url=url)
+        provider = IBMProvider(token, url=url)
     else:
-        provider = IBMQ.load_account()
+        provider = IBMProvider()
     return provider
 
 
@@ -319,14 +319,14 @@ def choose_backend(local_sim, token, url, b_end, sim, qubits):
             backend = provider.get_backend("ibmq_qasm_simulator")
             verbosity("sim provider.get_backend() returns " + str(backend), 3)
         else:
-            from qiskit.providers.ibmq import least_busy
+            from qiskit_ibm_provider import least_busy
 
             large_enough_devices = provider.backends(
                 filters=lambda x: x.configuration().n_qubits >= qubits
                 and not x.configuration().simulator
             )
             backend = least_busy(large_enough_devices)
-            verbosity("The best backend is " + backend.name(), 2)
+            verbosity("The best backend is " + backend.name, 2)
     verbosity("Backend is " + str(backend), 1)
     return backend
 
