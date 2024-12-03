@@ -7,11 +7,12 @@ WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES."""
 
 import argparse
 import sys
-
+from typing import Optional
 from qiskit.converters import circuit_to_dag
-from qiskit.tools.monitor import job_monitor
+
+# from qiskit.tools.monitor import job_monitor
 from qiskit import execute, QuantumCircuit, ClassicalRegister, QuantumRegister
-from qiskit_ibm_provider import IBMProvider
+from qiskit_ibm_runtime import QiskitRuntimeService
 import qyqhex as qh
 
 EXPLANATION = """QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
@@ -131,15 +132,14 @@ GROUP = PARSER.add_mutually_exclusive_group()
 GROUP.add_argument(
     "-q", "--ibmq", action="store_true", help="Use genuine IBMQ processor (default)"
 )
-GROUP.add_argument("-s", "--sim", action="store_true", help="Use IBMQ qasm simulator")
 GROUP.add_argument("-a", "--aer", action="store_true", help="User QISKit aer simulator")
 GROUP.add_argument(
     "-g", "--qcgpu", action="store_true", help="Use qcgpu simulator (requires GPU)"
 )
 PARSER.add_argument(
-    "--api_provider",
+    "--api_service",
     action="store",
-    help="""Backend api provider,
+    help="""Backend api service,
                     currently supported are [IBMQ | QI].
                     Default is IBMQ.""",
     default="IBMQ",
@@ -196,11 +196,11 @@ PARSER.add_argument(
 PARSER.add_argument(
     "-u", "--usage", action="store_true", help="Show long usage message and exit 0"
 )
-PARSER.add_argument(
-    "--use_job_monitor",
-    action="store_true",
-    help="Use the job monitor (doesn't work with QI)",
-)
+# PARSER.add_argument(
+#     "--use_job_monitor",
+#     action="store_true",
+#     help="Use the job monitor (doesn't work with QI)",
+# )
 PARSER.add_argument(
     "-v",
     "--verbose",
@@ -261,17 +261,17 @@ def create_circuit(filepath=None):
     return circ
 
 
-def ibmq_account_fu(token, url):
-    """Load IBMQ account appropriately and return provider"""
+def ibmq_account_fu(token: Optional[str] = None, name: Optional[str] = None):
+    """Load IBMQ account appropriately and return service"""
     if token:
-        provider = IBMProvider(token, url=url)
+        service = QiskitRuntimeService(token=token, name=name)
     else:
-        provider = IBMProvider()
-    return provider
+        service = QiskitRuntimeService()
+    return service
 
 
-def qi_account_fu(token):
-    """Load Quantum Inspire account appropriately and return provider"""
+def qi_account_fu(token: str):
+    """Load Quantum Inspire account appropriately and return service"""
     from quantuminspire.qiskit import QI
     from quantuminspire.credentials import enable_account
 
@@ -282,13 +282,13 @@ def qi_account_fu(token):
 
 
 def account_fu(token, url):
-    """Load account from correct API provider"""
-    a_p = API_PROVIDER.upper()
+    """Load account from correct API service"""
+    a_p = API_service.upper()
     if a_p == "IBMQ":
-        provider = ibmq_account_fu(token, url)
+        service = ibmq_account_fu(token, url)
     elif a_p == "QI":
-        provider = qi_account_fu(token)
-    return provider
+        service = qi_account_fu(token)
+    return service
 
 
 # Choose backend
@@ -305,27 +305,20 @@ def choose_backend(local_sim, token, url, b_end, sim, qubits):
         # Run the quantum circuit on a statevector simulator backend
         backend = BasicAer.get_backend("statevector_simulator")
     elif local_sim == "qcgpu":
-        from qiskit_qcgpu_provider import QCGPUProvider
+        from qiskit_qcgpu_service import QCGPUservice
 
-        backend = QCGPUProvider().get_backend("qasm_simulator")
+        backend = QCGPUservice().get_backend("qasm_simulator")
     else:
-        provider = account_fu(token, url)
-        verbosity("Provider is " + str(provider), 3)
-        verbosity("provider.backends is " + str(provider.backends()), 3)
+        service = account_fu(token, url)
+        verbosity("service is " + str(service), 3)
+        verbosity("service.backends is " + str(service.backends()), 3)
         if b_end:
-            backend = provider.get_backend(b_end)
-            verbosity("b_end provider.get_backend() returns " + str(backend), 3)
-        elif sim:
-            backend = provider.get_backend("ibmq_qasm_simulator")
-            verbosity("sim provider.get_backend() returns " + str(backend), 3)
+            backend = service.get_backend(b_end)
+            verbosity("b_end service.get_backend() returns " + str(backend), 3)
         else:
-            from qiskit_ibm_provider import least_busy
+            from qiskit_ibm_service import least_busy
 
-            large_enough_devices = provider.backends(
-                filters=lambda x: x.configuration().n_qubits >= qubits
-                and not x.configuration().simulator
-            )
-            backend = least_busy(large_enough_devices)
+            backend = least_busy(min_num_qubits=qubits)
             verbosity("The best backend is " + backend.name, 2)
     verbosity("Backend is " + str(backend), 1)
     return backend
@@ -337,11 +330,11 @@ def choose_backend(local_sim, token, url, b_end, sim, qubits):
 
 
 ARGS = PARSER.parse_args()
-API_PROVIDER = ARGS.api_provider.upper()
+API_service = ARGS.api_service.upper()
 TOKEN = ARGS.token
 URL = ARGS.url
 FROM_CSV = ARGS.from_csv
-USE_JM = ARGS.use_job_monitor
+# USE_JM = ARGS.use_job_monitor
 
 if ARGS.usage:
     print(LONG_EXPLANATION)
@@ -351,9 +344,9 @@ if FROM_CSV:
     qh.QYQHexagram.from_csv(FROM_CSV)
     exit(0)
 
-if API_PROVIDER == "IBMQ" and ((TOKEN and not URL) or (URL and not TOKEN)):
+if API_service == "IBMQ" and ((TOKEN and not URL) or (URL and not TOKEN)):
     print(
-        "--token and --url must be used together for IBMQ provider or not at all",
+        "--token and --url must be used together for IBMQ service or not at all",
         file=sys.stderr,
     )
     exit(1)
@@ -374,15 +367,13 @@ if ARGS.drawcircuit:
 LOCAL_SIM = ""
 if ARGS.aer:
     LOCAL_SIM = "aer"
-    API_PROVIDER = "aer"
+    API_service = "aer"
 elif ARGS.qcgpu:
     LOCAL_SIM = "qcgpu"
-    API_PROVIDER = "qcgpu"
+    API_service = "qcgpu"
 
 # Choose backend
-BACKEND = choose_backend(
-    LOCAL_SIM, ARGS.token, ARGS.url, ARGS.backend, ARGS.sim, NUM_QUBITS
-)
+BACKEND = choose_backend(LOCAL_SIM, ARGS.token, ARGS.url, ARGS.backend, NUM_QUBITS)
 
 print("Backend is " + str(BACKEND))
 
@@ -391,15 +382,14 @@ if BACKEND is None:
     exit(100)
 
 # Prepare to render
-H = qh.QYQHexagram(API_PROVIDER, BACKEND)
+H = qh.QYQHexagram(API_service, BACKEND)
 
 # Loop running circuit and measuring.
 # Each complete run provides the bit dictionary for one line.
 for i in range(0, 6):
     job_exp = execute(QC, backend=BACKEND, shots=ARGS.shots, memory=ARGS.memory)
-    if USE_JM:
-        job_monitor(job_exp)
-
+    # if USE_JM:
+    #     job_monitor(job_exp)
     result_exp = job_exp.result()
 
     # Raw data if requested
