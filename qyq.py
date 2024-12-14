@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """qyq.py ... Main script. Run and render.
 QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
 Copyright 2019, 2022 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
@@ -9,9 +11,7 @@ import argparse
 import sys
 from typing import Optional
 from qiskit.converters import circuit_to_dag
-
-# from qiskit.tools.monitor import job_monitor
-from qiskit import execute, QuantumCircuit, ClassicalRegister, QuantumRegister
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
 from qiskit_ibm_runtime import QiskitRuntimeService
 import qyqhex as qh
 
@@ -295,7 +295,7 @@ def account_fu(token, url):
 # ##############
 
 
-def choose_backend(local_sim, token, url, b_end, sim, qubits):
+def choose_backend(local_sim, token, url, b_end, qubits):
     """Return backend selected by user if account will activate and allow."""
     backend = None
     if local_sim == "aer":
@@ -306,7 +306,6 @@ def choose_backend(local_sim, token, url, b_end, sim, qubits):
         backend = BasicAer.get_backend("statevector_simulator")
     elif local_sim == "qcgpu":
         from qiskit_qcgpu_service import QCGPUservice
-
         backend = QCGPUservice().get_backend("qasm_simulator")
     else:
         service = account_fu(token, url)
@@ -316,9 +315,11 @@ def choose_backend(local_sim, token, url, b_end, sim, qubits):
             backend = service.get_backend(b_end)
             verbosity("b_end service.get_backend() returns " + str(backend), 3)
         else:
-            from qiskit_ibm_service import least_busy
-
-            backend = least_busy(min_num_qubits=qubits)
+            from qiskit_ibm_runtime import QiskitRuntimeService
+            from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
+            from qiskit_ibm_runtime import SamplerV2 as Sampler
+            service = QiskitRuntimeService()
+            backend = service.least_busy(min_num_qubits=6)
             verbosity("The best backend is " + backend.name, 2)
     verbosity("Backend is " + str(backend), 1)
     return backend
@@ -380,6 +381,10 @@ print("Backend is " + str(BACKEND))
 if BACKEND is None:
     print("No backend available, quitting.")
     exit(100)
+
+# DEBUG #
+exit(99)
+# DEBUG #
 
 # Prepare to render
 H = qh.QYQHexagram(API_service, BACKEND)
