@@ -174,12 +174,12 @@ PARSER.add_argument(
     help="""Load a csv file previously output by Quantum Yi Qing
                     and display the pair of hexagrams it represents""",
 )
-PARSER.add_argument(
-    "-m",
-    "--memory",
-    action="store_true",
-    help="Print individual results of multishot experiment",
-)
+# PARSER.add_argument(
+#     "-m",
+#     "--memory",
+#     action="store_true",
+#     help="Print individual results of multishot experiment",
+# )
 PARSER.add_argument("--qasm", action="store_true", help="Show the qasm for the circuit")
 PARSER.add_argument(
     "--shots",
@@ -409,7 +409,7 @@ all_counts_sorted = []
 index = 1
 for item in result:
     sorted_counts = {}
-    counts = item.data['c'].get_counts()
+    counts = item.data["c"].get_counts()
     print(f"Counts for QYQ circuit {index} : {counts}")
     sorted_keys = sorted(counts.keys())
     for j in sorted_keys:
