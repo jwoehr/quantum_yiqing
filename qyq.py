@@ -12,7 +12,7 @@ import pprint
 import sys
 from typing import Optional
 from qiskit.converters import circuit_to_dag
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, transpile
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
 from qiskit_ibm_runtime import QiskitRuntimeService
 from qiskit_ibm_runtime import SamplerV2 as Sampler
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
