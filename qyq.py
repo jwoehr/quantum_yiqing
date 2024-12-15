@@ -2,7 +2,7 @@
 
 """qyq.py ... Main script. Run and render.
 QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
-Copyright 2019, 2022 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
+Copyright 2019, 2022, 2024 Jack Woehr jwoehr@softwoehr.com PO Box 82, Beulah, CO 81024
 BSD-3 license -- See LICENSE which you should have received with this code.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES."""
@@ -19,14 +19,14 @@ from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 import qyqhex as qh
 
 EXPLANATION = """QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
-Copyright 2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
+Copyright 2019, 2022, 2024 Jack Woehr jwoehr@softwoehr.com PO Box 82, Beulah, CO 81024
 BSD-3 license -- See LICENSE which you should have received with this code.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 """
 
 LONG_EXPLANATION = """QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
-Copyright 2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051
+Copyright 2019, 2022, 2024 Jack Woehr jwoehr@softwoehr.com PO Box 82, Beulah, CO 81024
 BSD-3 license -- See LICENSE which you should have received with this code.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
@@ -34,18 +34,18 @@ WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 Default is to run on genuine IBM Q quantum processor.
 
 Default is to assume the user has stored an IBM Q account identity token
-which can be retrieved by qiskit.IBMQ.load_accounts(). Alternatively, the
+which can be retrieved by qiskit.QiskitRuntimeService(). Alternatively, the
 token can be provided via the -i --identity switch. Additionally, the
 --url switch can provide a specific url.
 
-Quantum Inspire (https://www.qutech.nl/) simulator is also supported.
-
-Default for QI is to assume the user has stored a QI account identity token
-as explained on the Quantum Inspire SDK GitHub page
-(https://github.com/QuTech-Delft/quantuminspire). Alternatively, the token can
-be provided via the -i --identity switch.
-
-To use QI support you must also have installed the Quantum Inspire SDK.
+N/A Quantum Inspire (https://www.qutech.nl/) simulator is also supported.
+N/A
+N/A Default for QI is to assume the user has stored a QI account identity token
+N/A as explained on the Quantum Inspire SDK GitHub page
+N/A (https://github.com/QuTech-Delft/quantuminspire). Alternatively, the token can
+N/A be provided via the -i --identity switch.
+N/A
+N/A To use QI support you must also have installed the Quantum Inspire SDK.
 
 Type -h or --help for important options information.
 
@@ -185,8 +185,8 @@ PARSER.add_argument(
     "--shots",
     type=int,
     action="store",
-    default=1024,
-    help="number of execution shots, default is 1024",
+    default=2048,
+    help="number of execution shots, default is 2048",
 )
 PARSER.add_argument(
     "--token",
@@ -331,6 +331,7 @@ def choose_backend(token, url, b_end, qubits=6):
 
 ARGS = PARSER.parse_args()
 # API_service = ARGS.api_service.upper()
+SHOTS = ARGS.shots
 TOKEN = ARGS.token
 URL = ARGS.url
 FROM_CSV = ARGS.from_csv
@@ -385,12 +386,6 @@ if BACKEND is None:
 # Prepare to render
 H = qh.QYQHexagram(None, BACKEND)
 
-
-# DEBUG #
-print(H)
-print(H.draw())
-# DEBUG #
-
 # Loop compiling and transpiling circuit 6 times for 6 lines.
 # Each circuit will provide the bit dictionary for one line.
 circuits = []
@@ -400,7 +395,7 @@ for i in range(0, 6):
     circuits.append(pm.run(QC))
 
 sampler = Sampler(mode=BACKEND)
-job = sampler.run(circuits)
+job = sampler.run(circuits, shots=SHOTS)
 print(f">>> Job ID: {job.job_id()}")
 print(f">>> Job Status: {job.status()}")
 result = job.result()
