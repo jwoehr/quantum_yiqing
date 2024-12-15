@@ -1,62 +1,41 @@
 # quantum_yiqing
-Quantum Computer Casts Yi Qing Oracle
 
-Yi Qing oracle is cast by some using three coins.
+Quantum Computer Casts I Ching Oracle
+
+I Ching oracle is cast by some using three coins.
 3 qubits in superposition represent the three coins.
 The most prevalent result of multiple measurement runs becomes the "coin toss".
 
 The oracle has an inline quantum program which is used by default.
 
-Optionally, with the `-f FILEPATH` switch, you can provide your own OPENQASM 2.0 quantum program returning 3
-classical bits. Two sample programs are provided for this purpose, `yiqing_inline.qasm` and `yiqing_simple.qasm`
+Optionally, with the `-f FILEPATH` switch, you can provide your own OpenQASM 2 quantum program returning 3 classical bits. Two sample programs are provided for this purpose, `yiqing_inline.qasm` and `yiqing_simple.qasm`
 
-You must have [QISKit](https://qiskit.org/) installed.
+You must have [Qiskit](https://qiskit.org/) installed.
 
-To use IBM Q Experience online devices and/or simulator(s), you must have an account from [IBM Q Experience](https://quantum-computing.ibm.com/) .
+To use IBM Quantum devices, you must have an account with [IBM Quantum](https://quantum.ibm.com/) .
 
-To use QI support you must also have installed the [Quantum Inspire SDK](https://github.com/QuTech-Delft/quantuminspire)
-and have a token provided with your account from the [QuTech website](https://www.qutech.nl/).
+```text
+$ ./qyq.py --help
+usage: qyq.py [-h] [-b BACKEND] [-d] [-f FILEPATH] [--from_csv FROM_CSV] [--qasm] [--shots SHOTS] [--token TOKEN] [--url URL] [-u] [-v]
 
-To use QCGPU support you must also have installed [qisit-qcgpu-provider](https://github.com/qiskit-community/qiskit-qcgpu-provider)
+QUANTUM YI QING - Cast an I Ching Oracle using IBM Quantum for the cast. Copyright 2019, 2022, 2024 Jack Woehr jwoehr@softwoehr.com PO Box 82, Beulah, CO 81024 BSD-3
+license -- See LICENSE which you should have received with this code. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND WITHOUT ANY EXPRESS
+OR IMPLIED WARRANTIES.
 
-```
-$ python qyq.py --help
-usage: qyq.py [-h] [-q | -s | -a | -g] [--api_provider API_PROVIDER]
-              [-b BACKEND] [-c MAX_CREDITS] [-d] [-f FILEPATH]
-              [--from_csv FROM_CSV] [-m] [--qasm] [--shots SHOTS]
-              [--token TOKEN] [--url URL] [-u] [-v]
-
-QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast. Copyright
-2019 Jack Woehr jwoehr@softwoehr.com PO Box 51, Golden, CO 80402-0051 BSD-3
-license -- See LICENSE which you should have received with this code. THIS
-SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
-
-optional arguments:
+options:
   -h, --help            show this help message and exit
-  -q, --ibmq            Use genuine IBMQ processor (default)
-  -s, --sim             Use IBMQ qasm simulator
-  -a, --aer             User QISKit aer simulator
-  -g, --qcgpu           Use qcgpu simulator (requires GPU)
-  --api_provider API_PROVIDER
-                        Backend api provider, currently supported are [IBMQ |
-                        QI]. Default is IBMQ.
   -b BACKEND, --backend BACKEND
-                        genuine qpu backend to use, default is least busy of
-                        large enough devices
-  -c MAX_CREDITS, --max_credits MAX_CREDITS
-                        max credits to expend on run, default is 3
+                        genuine qpu backend to use, default is least busy of large enough devices
   -d, --drawcircuit     Draw the circuit in extended charset
   -f FILEPATH, --filepath FILEPATH
-                        OPENQASM 2.0 file to use for the oracle circuit, must
-                        return 3 classical bits
-  --from_csv FROM_CSV   Load a csv file previously output by Quantum Yi Qing
-                        and display the pair of hexagrams it represents
-  -m, --memory          Print individual results of multishot experiment
+                        OPENQASM file to use for the oracle circuit, must return 3 classical bits
+  --from_csv FROM_CSV   Load a csv file previously output by Quantum Yi Qing and display the pair of hexagrams it represents
   --qasm                Show the qasm for the circuit
-  --shots SHOTS         number of execution shots, default is 1024
+  --shots SHOTS         number of execution shots, default is 2048
   --token TOKEN         Use this token if a --url argument is also provided
   --url URL             Use this url if a --token argument is also provided
   -u, --usage           Show long usage message and exit 0
   -v, --verbose         Increase verbosity each -v up to 3
 ```
+
+Jack Woehr 2024-12-15

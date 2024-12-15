@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """qyq.py ... Main script. Run and render.
-QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
+QUANTUM YI QING - Cast an I Ching Oracle using IBM Q for the cast.
 Copyright 2019, 2022, 2024 Jack Woehr jwoehr@softwoehr.com PO Box 82, Beulah, CO 81024
 BSD-3 license -- See LICENSE which you should have received with this code.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
@@ -12,13 +12,13 @@ import pprint
 import sys
 from typing import Optional
 from qiskit.converters import circuit_to_dag
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, qasm3
 from qiskit_ibm_runtime import QiskitRuntimeService
 from qiskit_ibm_runtime import SamplerV2 as Sampler
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 import qyqhex as qh
 
-EXPLANATION = """QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
+EXPLANATION = """QUANTUM YI QING - Cast an I Ching Oracle using IBM Quantum for the cast.
 Copyright 2019, 2022, 2024 Jack Woehr jwoehr@softwoehr.com PO Box 82, Beulah, CO 81024
 BSD-3 license -- See LICENSE which you should have received with this code.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
@@ -31,21 +31,12 @@ BSD-3 license -- See LICENSE which you should have received with this code.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 
-Default is to run on genuine IBM Q quantum processor.
+Performs the oracle on a genuine IBM quantum processor.
 
-Default is to assume the user has stored an IBM Q account identity token
+Default is to assume the user has stored an IBM Quantum account token
 which can be retrieved by qiskit.QiskitRuntimeService(). Alternatively, the
-token can be provided via the -i --identity switch. Additionally, the
---url switch can provide a specific url.
-
-N/A Quantum Inspire (https://www.qutech.nl/) simulator is also supported.
-N/A
-N/A Default for QI is to assume the user has stored a QI account identity token
-N/A as explained on the Quantum Inspire SDK GitHub page
-N/A (https://github.com/QuTech-Delft/quantuminspire). Alternatively, the token can
-N/A be provided via the -i --identity switch.
-N/A
-N/A To use QI support you must also have installed the Quantum Inspire SDK.
+token can be provided via the -i --identity switch along with the
+--url switch to provide a specific url.
 
 Type -h or --help for important options information.
 
@@ -73,7 +64,7 @@ In the program, the lines of the primary hexagram are represented as follows:
     ***000*** - Yang changing
 
 In the derivative hexagram, the "changing" notion is abstracted and the
-hexagram stands as calculated per above.
+changed hexagram stands as calculated per above.
 
 The inline quantum program uses 6 qubits and puts them by pairs in a Bell state:
 h q[0];
@@ -131,22 +122,6 @@ Aer state vector simulator.
 """
 
 PARSER = argparse.ArgumentParser(description=EXPLANATION)
-# GROUP = PARSER.add_mutually_exclusive_group()
-# GROUP.add_argument(
-#     "-q", "--ibmq", action="store_true", help="Use genuine IBMQ processor (default)"
-# )
-# GROUP.add_argument("-a", "--aer", action="store_true", help="User QISKit aer simulator")
-# GROUP.add_argument(
-#     "-g", "--qcgpu", action="store_true", help="Use qcgpu simulator (requires GPU)"
-# )
-# PARSER.add_argument(
-#     "--api_service",
-#     action="store",
-#     help="""Backend api service,
-#                     currently supported are [IBMQ | QI].
-#                     Default is IBMQ.""",
-#     default="IBMQ",
-# )
 PARSER.add_argument(
     "-b",
     "--backend",
@@ -165,7 +140,7 @@ PARSER.add_argument(
     "--filepath",
     type=str,
     action="store",
-    help="""OPENQASM 2.0 file to use for the oracle circuit,
+    help="""OPENQASM file to use for the oracle circuit,
                     must return 3 classical bits""",
 )
 PARSER.add_argument(
@@ -174,12 +149,6 @@ PARSER.add_argument(
     help="""Load a csv file previously output by Quantum Yi Qing
                     and display the pair of hexagrams it represents""",
 )
-# PARSER.add_argument(
-#     "-m",
-#     "--memory",
-#     action="store_true",
-#     help="Print individual results of multishot experiment",
-# )
 PARSER.add_argument("--qasm", action="store_true", help="Show the qasm for the circuit")
 PARSER.add_argument(
     "--shots",
@@ -199,11 +168,6 @@ PARSER.add_argument(
 PARSER.add_argument(
     "-u", "--usage", action="store_true", help="Show long usage message and exit 0"
 )
-# PARSER.add_argument(
-#     "--use_job_monitor",
-#     action="store_true",
-#     help="Use the job monitor (doesn't work with QI)",
-# )
 PARSER.add_argument(
     "-v",
     "--verbose",
@@ -257,40 +221,15 @@ def create_circuit(filepath=None):
         circ.measure(q[3], c[1])
         circ.measure(q[5], c[2])
 
-        # drawing the circuit
-        if ARGS.drawcircuit:
-            print(circ.draw())
-
     return circ
 
 
-def ibmq_account_fu(token: Optional[str] = None, url: Optional[str] = None):
+def account_fu(token: Optional[str] = None, url: Optional[str] = None):
     """Load IBMQ account appropriately and return service"""
     if token:
         service = QiskitRuntimeService(token=token, url=url)
     else:
         service = QiskitRuntimeService()
-    return service
-
-
-# def qi_account_fu(token: str):
-#     """Load Quantum Inspire account appropriately and return service"""
-#     from quantuminspire.qiskit import QI
-#     from quantuminspire.credentials import enable_account
-
-#     if token:
-#         enable_account(token)
-#     QI.set_authentication()
-#     return QI
-
-
-def account_fu(token, url):
-    # """Load account from correct API service"""
-    # a_p = API_service.upper()
-    # if a_p == "IBMQ":
-    service = ibmq_account_fu(token, url)
-    # elif a_p == "QI":
-    #     service = qi_account_fu(token)
     return service
 
 
@@ -301,16 +240,6 @@ def account_fu(token, url):
 def choose_backend(token, url, b_end, qubits=6):
     """Return backend selected by user if account will activate and allow."""
     backend = None
-    # if local_sim == "aer":
-    #     # Import Aer
-    #     from qiskit import BasicAer
-
-    #     # Run the quantum circuit on a statevector simulator backend
-    #     backend = BasicAer.get_backend("statevector_simulator")
-    # elif local_sim == "qcgpu":
-    #     from qiskit_qcgpu_service import QCGPUservice
-    #     backend = QCGPUservice().get_backend("qasm_simulator")
-    # else:
     service = account_fu(token, url)
     verbosity("service is " + str(service), 3)
     verbosity("service.backends is " + str(service.backends()), 3)
@@ -345,7 +274,6 @@ if FROM_CSV:
     qh.QYQHexagram.from_csv(FROM_CSV)
     exit(0)
 
-# if API_service == "IBMQ" and ((TOKEN and not URL) or (URL and not TOKEN)):
 if (TOKEN and not URL) or (URL and not TOKEN):
     print(
         "--token and --url must be used together for IBMQ service or not at all",
@@ -359,20 +287,11 @@ verbosity("NUM_QUBITS == " + str(NUM_QUBITS), 2)
 
 # show qasm
 if ARGS.qasm:
-    print(QC.qasm())
+    print(qasm3.dumps(QC))
 
 # drawing the circuit
 if ARGS.drawcircuit:
     print(QC.draw())
-
-# Did user call for local simulator?
-# LOCAL_SIM = ""
-# if ARGS.aer:
-#     LOCAL_SIM = "aer"
-#     API_service = "aer"
-# elif ARGS.qcgpu:
-#     LOCAL_SIM = "qcgpu"
-#     API_service = "qcgpu"
 
 # Choose backend
 BACKEND = choose_backend(ARGS.token, ARGS.url, ARGS.backend, NUM_QUBITS)
@@ -384,7 +303,7 @@ if BACKEND is None:
     exit(100)
 
 # Prepare to render
-H = qh.QYQHexagram(None, BACKEND)
+H = qh.QYQHexagram("IBM Quantum", BACKEND)
 
 # Loop compiling and transpiling circuit 6 times for 6 lines.
 # Each circuit will provide the bit dictionary for one line.
@@ -414,21 +333,6 @@ for item in result:
         sorted_counts[k] = counts[j]
     all_counts_sorted.append(sorted_counts)
     index += 1
-
-# DEBUG #
-# exit(99)
-# DEBUG #
-
-# Prepare data
-# counts_exp = result_exp.get_counts(QC)
-# print(counts_exp)
-# sorted_keys = sorted(counts_exp.keys())
-# sorted_counts = {}
-# for j in sorted_keys:
-#     k = j
-#     if len(j) > 3:  # truncate left if necessary
-#         k = j[len(j) - 3 :]
-#     sorted_counts[k] = counts_exp[j]
 
 # Print all sorted counts
 pprint.pprint(all_counts_sorted)
