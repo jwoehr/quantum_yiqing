@@ -9,8 +9,6 @@ WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES."""
 
 import argparse
 import pprint
-import sys
-from typing import Optional
 from qiskit.converters import circuit_to_dag
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, qasm3
 from qiskit_ibm_runtime import QiskitRuntimeService
@@ -19,24 +17,23 @@ from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 import qyqhex as qh
 
 EXPLANATION = """QUANTUM YI QING - Cast an I Ching Oracle using IBM Quantum for the cast.
-Copyright 2019, 2022, 2024 Jack Woehr jwoehr@softwoehr.com PO Box 82, Beulah, CO 81024
+Copyright 2019, 2025 Jack Woehr jwoehr@softwoehr.com PO Box 82, Beulah, CO 81024
 BSD-3 license -- See LICENSE which you should have received with this code.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
 """
 
-LONG_EXPLANATION = """QUANTUM YI QING - Cast a Yi Qing Oracle using IBM Q for the cast.
-Copyright 2019, 2022, 2024 Jack Woehr jwoehr@softwoehr.com PO Box 82, Beulah, CO 81024
-BSD-3 license -- See LICENSE which you should have received with this code.
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
-
+LONG_EXPLANATION = f"""{EXPLANATION}
 Performs the oracle on a genuine IBM quantum processor.
 
 Default is to assume the user has stored an IBM Quantum account token
 which can be retrieved by qiskit.QiskitRuntimeService(). Alternatively, the
-token can be provided via the -i --identity switch along with the
---url switch to provide a specific url.
+various keyword arguments can be provided by any reasonable combination of
+the program switches --url --token --name --filename --instance --channel.
+
+The easiest is "no switches" which uses your account defaults. If you have
+multiple accounts in your qiskit json file, use --name to identify the
+desired account.
 
 Type -h or --help for important options information.
 
@@ -160,10 +157,36 @@ PARSER.add_argument(
 PARSER.add_argument(
     "--token",
     action="store",
-    help="Use this token if a --url argument is also provided",
+    help="IBM Cloud API key or IBM Quantum API token",
 )
 PARSER.add_argument(
-    "--url", action="store", help="Use this url if a --token argument is also provided"
+    "--url",
+    action="store",
+    help="""The API URL.
+    Defaults to https://cloud.ibm.com (ibm_cloud) or 
+    https://auth.quantum.ibm.com/api (ibm_quantum).""",
+)
+PARSER.add_argument(
+    "--channel",
+    action="store",
+    help="""Channel type. ibm_cloud, ibm_quantum or local. If local is 
+    selected, the local testing mode will be used, and primitive queries will 
+    run on a local simulator. For more details, check the Qiskit Runtime 
+    local testing mode documentation.""",
+)
+PARSER.add_argument(
+    "--filename",
+    action="store",
+    help="""Full path of the file where the account is created. 
+    Default: _DEFAULT_ACCOUNT_CONFIG_JSON_FILE""",
+)
+PARSER.add_argument("--name", action="store", help="""Name of the account to load.""")
+PARSER.add_argument(
+    "--instance",
+    action="store",
+    help="""The service instance to use. For ibm_cloud runtime, this is the
+    Cloud Resource Name (CRN) or the service name. For ibm_quantum runtime,
+    this is the hub/group/project in that format. """,
 )
 PARSER.add_argument(
     "-u", "--usage", action="store_true", help="Show long usage message and exit 0"
@@ -224,10 +247,37 @@ def create_circuit(filepath=None):
     return circ
 
 
-def account_fu(token: Optional[str] = None, url: Optional[str] = None):
+def formulate_account_kwargs() -> dict:
+    """
+    Build the kwargs to the account from options
+
+    Returns
+    -------
+    dict
+        The key/value dict of kwargs for QiskitRuntimeService()
+
+    """
+    kwargs = {}
+    if TOKEN:
+        kwargs["token"] = TOKEN
+    if URL:
+        kwargs["url"] = URL
+    if CHANNEL:
+        kwargs["CHANNEL"] = CHANNEL
+    if FILENAME:
+        kwargs["filename"] = FILENAME
+    if NAME:
+        kwargs["name"] = NAME
+    if INSTANCE:
+        kwargs["instance"] = INSTANCE
+    return kwargs
+
+
+def account_fu(kwargs: dict):
     """Load IBMQ account appropriately and return service"""
-    if token:
-        service = QiskitRuntimeService(token=token, url=url)
+    service = None
+    if len(kwargs) > 0:
+        service = QiskitRuntimeService(**kwargs)
     else:
         service = QiskitRuntimeService()
     return service
@@ -240,7 +290,7 @@ def account_fu(token: Optional[str] = None, url: Optional[str] = None):
 def choose_backend(token, url, b_end, qubits=6):
     """Return backend selected by user if account will activate and allow."""
     backend = None
-    service = account_fu(token, url)
+    service = account_fu(formulate_account_kwargs())
     verbosity("service is " + str(service), 3)
     verbosity("service.backends is " + str(service.backends()), 3)
     if b_end:
@@ -263,6 +313,10 @@ ARGS = PARSER.parse_args()
 SHOTS = ARGS.shots
 TOKEN = ARGS.token
 URL = ARGS.url
+CHANNEL = ARGS.channel
+FILENAME = ARGS.filename
+NAME = ARGS.name
+INSTANCE = ARGS.instance
 FROM_CSV = ARGS.from_csv
 # USE_JM = ARGS.use_job_monitor
 
@@ -273,13 +327,6 @@ if ARGS.usage:
 if FROM_CSV:
     qh.QYQHexagram.from_csv(FROM_CSV)
     exit(0)
-
-if (TOKEN and not URL) or (URL and not TOKEN):
-    print(
-        "--token and --url must be used together for IBMQ service or not at all",
-        file=sys.stderr,
-    )
-    exit(1)
 
 QC = create_circuit(ARGS.filepath)
 NUM_QUBITS = circuit_to_dag(QC).num_qubits()
