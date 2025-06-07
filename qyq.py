@@ -2,7 +2,7 @@
 
 """qyq.py ... Main script. Run and render.
 QUANTUM YI QING - Cast an I Ching Oracle using IBM Q for the cast.
-Copyright 2019, 2022, 2024 Jack Woehr jwoehr@softwoehr.com PO Box 82, Beulah, CO 81024
+Copyright 2019, 2022, 2024, 2025 Jack Woehr jwoehr@softwoehr.com PO Box 82, Beulah, CO 81024
 BSD-3 license -- See LICENSE which you should have received with this code.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES."""
@@ -263,7 +263,7 @@ def formulate_account_kwargs() -> dict:
     if URL:
         kwargs["url"] = URL
     if CHANNEL:
-        kwargs["CHANNEL"] = CHANNEL
+        kwargs["channel"] = CHANNEL
     if FILENAME:
         kwargs["filename"] = FILENAME
     if NAME:

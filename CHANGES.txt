@@ -1,5 +1,11 @@
 Changes to Quantum Yi Qing
 
+v3.3 2025-06-08
+	- Runs on Qiskit 2.x
+	- Last tested on Qiskit 2.1.0-rc1
+	
+( oops didn't update the changes file for a long time ! )
+
 v2.3 2022-08-24
 	- Updated QI support now must specify backend currently `Starmon-5`
 		- Use `-f yiqing_5.qasm` for `Starmon-5`
