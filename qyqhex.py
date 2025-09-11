@@ -80,38 +80,10 @@ class QYQLine:
     @staticmethod
     def interp(bit_dict):
         """Analyse a bit dictionary and create the line"""
-        best = 0
-        bits = [None, None]
-        for i in bit_dict.keys():
-            val = bit_dict[i]
-            if val == best:
-                bits[1] = i
-                if bits[0] is None:
-                    bits[0] = i
-            elif val > best:
-                best = val
-                bits[1] = None
-                bits[0] = i
-        if bits[1] is None:
-            return QYQLine.newFromPattern(QYQLine.getPattern(bits[0]))
-        else:
-            x = [QYQLine.getPattern(bits[0]), QYQLine.getPattern(bits[1])]
-            if x[0] == x[1]:
-                return QYQLine.newFromPattern(x[0])
-            if QYQLine.yin_c in x:
-                if QYQLine.yang_u in x:
-                    return QYQLine.newFromPattern(QYQLine.yang_u)
-                if QYQLine.yin_u in x:
-                    return QYQLine.newFromPattern(QYQLine.yin_u)
-                if QYQLine.yang_c in x:
-                    return QYQLine.newFromPattern(QYQLine.yin_c)
-            elif QYQLine.yang_u in x:
-                if QYQLine.yin_u in x:
-                    return QYQLine.newFromPattern(QYQLine.yin_u)
-                if QYQLine.yang_c in x:
-                    return QYQLine.newFromPattern(QYQLine.yang_c)
-            else:
-                return QYQLine.newFromPattern(QYQLine.yang_c)
+        sd = dict(sorted(bit_dict.items(), key=lambda item: item[1]))
+        bits = list(sd.keys())[7]
+        print(bits)
+        return QYQLine.newFromPattern(QYQLine.getPattern(bits))
 
 
 class QYQTimedCountsExp:
@@ -203,7 +175,6 @@ class QYQHexagram:
                     line_dict[bit_keys[i]] = int(row_list[i])
                 _qyqh.assimilate(line_dict)
 
-        _csvfile.close()
         _qyqh.draw(True)
 
     @staticmethod
